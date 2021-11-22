@@ -1,0 +1,4 @@
+{
+  // Required to compile directly to ES modules.
+  "typescript.preferences.importModuleSpecifierEnding": "js"
+}

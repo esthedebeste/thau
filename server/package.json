@@ -1,0 +1,17 @@
+{
+	"name": "thau-server",
+	"private": true,
+	"description": "Server side of thau.",
+	"main": "dist/server.js",
+	"scripts": {
+		"start": "node .",
+		"dev": "tsm ."
+	},
+	"type": "module",
+	"author": "tbhmens",
+	"license": "MIT",
+	"dependencies": {
+		"coggers": "^1.5.0",
+		"coggers-session": "^1.2.1"
+	}
+}

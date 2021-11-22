@@ -1,0 +1,30 @@
+{
+	"name": "thau",
+	"version": "0.0.1",
+	"description": "Easy user authentication.",
+	"exports": {
+		"node": "./dist/index.js"
+	},
+	"scripts": {},
+	"author": "tbhmens",
+	"license": "MIT",
+	"type": "module",
+	"keywords": [
+		"auth",
+		"authentication"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/tbhmens/thau.git",
+		"directory": "client"
+	},
+	"bugs": "https://github.com/tbhmens/thau/issues",
+	"homepage": "https://github.com/tbhmens/thau#readme",
+	"engines": {
+		"node": ">=15.12.0"
+	},
+	"devDependencies": {
+		"@types/express": "^4.17.13",
+		"coggers": "^1.5.0"
+	}
+}
