@@ -50,7 +50,7 @@ const defaults: Partial<MWOptions> = {
 	expirySecs: 120,
 };
 
-type ThauExtended = {
+export type ThauExtended = {
 	thau?: ThauToken;
 };
 
@@ -63,7 +63,7 @@ const coggersHandler = (options: ThauOptions & MWOptions) => {
 	const { error, urls, expirySecs } = { ...defaults, ...options };
 	if (urls.find(url => localhostRe.test(url)))
 		console.warn(
-			"\x1b[33m[thau] WARNING: You are using localhost in your url array. Make sure to remove this in production!\x1b[0m"
+			"\x1b[33m[thau] WARNING: You are using localhost in your urls array. Make sure to remove this in production!\x1b[0m"
 		);
 
 	const thau = new Thau(options);

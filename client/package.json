@@ -1,7 +1,7 @@
 {
 	"name": "thau",
 	"author": "tbhmens",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Easy user authentication.",
 	"exports": {
 		"node": "./dist/index.js"
