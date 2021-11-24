@@ -1,0 +1,58 @@
+html {
+	background-image: url("https://images.unsplash.com/photo-1637611331620-51149c7ceb94?auto=format&fit=crop&w=2560&h=1440&q=60");
+	font-family: system-ui, sans-serif;
+}
+.container {
+	box-shadow: #fdb7ff 10px 10px 40px;
+	background-color: #322747;
+	color: #eeddee;
+	margin: auto;
+	height: 80vh;
+	width: 30%;
+	border: 4px solid #fff2;
+	border-radius: 30px;
+	/* centered */
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+h1.log-in {
+	text-align: center;
+	font-size: 2em;
+	font-weight: bold;
+	margin-top: 0.5em;
+}
+
+.accounts {
+	text-align: center;
+	font-size: 1.5em;
+	font-weight: bold;
+	margin-top: 0.5em;
+}
+
+.account {
+	margin: 0.5em;
+	padding: 0.5em;
+	border: 2px solid #fff2;
+	border-radius: 10px;
+	background-color: #322747;
+	color: #eeddee;
+	text-align: center;
+	font-size: 1.5em;
+	font-weight: bold;
+	cursor: pointer;
+	text-align: center;
+}
+
+.icon {
+	display: inline;
+	max-height: 5em;
+}
+
+.wip {
+	position: absolute;
+	bottom: 5%;
+	right: 5%;
+}

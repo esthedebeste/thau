@@ -4,14 +4,22 @@
 	"description": "Server side of thau.",
 	"main": "dist/server.js",
 	"scripts": {
-		"start": "node .",
-		"dev": "tsm ."
+		"start": "node --experimental-json-modules .",
+		"build": "tsc",
+		"dev": "tsm ./src/server.ts"
 	},
 	"type": "module",
 	"author": "tbhmens",
 	"license": "MIT",
 	"dependencies": {
 		"coggers": "^1.5.0",
-		"coggers-session": "^1.2.1"
-	}
+		"coggers-session": "^1.2.1",
+		"pg": "^8.7.1",
+		"sirv": "^1.0.18",
+		"undici": "^4.10.2"
+	},
+	"devDependencies": {
+		"@types/pg": "^8.6.1"
+	},
+	"repository": "github:tbhmens/thau"
 }

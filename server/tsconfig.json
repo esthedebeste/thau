@@ -1,16 +1,18 @@
 {
 	"include": ["src"],
+	"exclude": ["client"],
 	"compilerOptions": {
 		"target": "ES2019",
 		"module": "ESNext",
-		"outDir": "dist",
-		"baseUrl": "src",
+		"outDir": "./dist",
+		"rootDir": "./src",
 		"moduleResolution": "node",
 		"isolatedModules": true,
 		"downlevelIteration": true,
 		"noImplicitAny": false,
 		"noUnusedParameters": true,
 		"skipLibCheck": true,
-		"forceConsistentCasingInFileNames": true
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true
 	}
 }

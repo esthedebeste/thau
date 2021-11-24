@@ -1,10 +1,8 @@
 {
-	"include": ["./src"],
 	"compilerOptions": {
+		"noEmit": true,
 		"target": "ES2019",
 		"module": "ESNext",
-		"outDir": "./dist",
-		"rootDir": "./src",
 		"moduleResolution": "node",
 		"isolatedModules": true,
 		"downlevelIteration": true,
@@ -12,6 +10,6 @@
 		"noUnusedParameters": true,
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
-		"declaration": true
+		"resolveJsonModule": true
 	}
 }

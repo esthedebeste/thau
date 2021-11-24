@@ -3,13 +3,13 @@
 	"author": "tbhmens",
 	"private": true,
 	"scripts": {
-		"start": "node ./server",
-		"lint": "eslint .",
-		"build": "tsc -p ./server && npx tsc -p ./client",
-		"heroku-postbuild": "npx -y --package=typescript tsc -p ./server/tsconfig.json"
+		"start": "node --experimental-json-modules ./server",
+		"test": "tsm ./test/src/test.ts",
+		"build": "tsc -p ./server && tsc -p ./client",
+		"heroku-postbuild": "npx -y --package=typescript@4.5.2 tsc -p ./server"
 	},
 	"devDependencies": {
-		"@types/node": "^15.12.0",
+		"@types/node": "^16.11.9",
 		"@typescript-eslint/eslint-plugin": "^5.4.0",
 		"@typescript-eslint/parser": "^5.4.0",
 		"eslint": "^8.3.0",
@@ -17,5 +17,13 @@
 		"prettier": "^2.4.1",
 		"tsm": "^2.1.4",
 		"typescript": "^4.5.2"
+	},
+	"workspaces": [
+		"server",
+		"client",
+		"test"
+	],
+	"engines": {
+		"node": "^16.11.0"
 	}
 }
