@@ -5,6 +5,7 @@
 	"scripts": {
 		"start": "node --experimental-json-modules ./server",
 		"test": "tsm ./test/src/test.ts",
+		"test-remote": "tsm ./test/src/test_remote.ts",
 		"build": "tsc -p ./server && tsc -p ./client",
 		"heroku-postbuild": "npx -y --package=typescript@4.5.2 tsc -p ./server"
 	},
