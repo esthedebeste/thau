@@ -22,7 +22,7 @@ const sessionPass = sessionSecret.map(decodeB64url);
 
 const done = async (req: Req, res: Res) => {
 	const { callback, user } = req.session;
-	if (!callback) return res.status(400).send();
+	if (!callback) return res.status(400).send("No callback");
 
 	const uid = await getsert(user.type, user.id);
 	const token: ThauToken = {
@@ -59,15 +59,13 @@ const coggers = new Coggers(
 					path: "/",
 				},
 			}),
-			(_, res) => {
+			(req, res) => {
+				if (req.headers["x-forwarded-proto"])
+					req.purl.protocol = req.headers["x-forwarded-proto"] + ":";
 				res.error = (msg: string, code = 400) => res.status(code).send(msg);
 			},
 			process.env.NODE_ENV === "production"
-				? // prod logger
-				  (req, res) =>
-						res.on("finish", () =>
-							console.log(`${req.method} ${res.statusCode} ${req.url}`)
-						)
+				? []
 				: // dev logger
 				  (req, res) => {
 						const colors = {
