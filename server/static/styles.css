@@ -18,6 +18,12 @@ html {
 	transform: translate(-50%, -50%);
 }
 
+@media screen and (orientation: portrait) {
+	.container {
+		width: 80%;
+	}
+}
+
 h1.log-in {
 	text-align: center;
 	font-size: 2em;
@@ -46,9 +52,13 @@ h1.log-in {
 	text-align: center;
 }
 
+.account.github {
+	background-color: #15101f;
+}
+
 .icon {
 	display: inline;
-	max-height: 5em;
+	max-height: 2em;
 }
 
 .wip {

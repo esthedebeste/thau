@@ -1,6 +1,12 @@
-import { Handler } from "coggers";
 import { request } from "undici";
-import { Req, requireQuery, Res, secrets } from "../utils.js";
+import {
+	Callback,
+	Redirect,
+	Req,
+	requireQuery,
+	Res,
+	secrets,
+} from "../utils.js";
 
 const { id, secret } = secrets("discord");
 async function loginToDiscord(
@@ -45,9 +51,9 @@ async function getUserData(token: string): Promise<User> {
 	return JSON.parse(body);
 }
 
-export const callback: Handler[] = [
+export const callback: Callback = [
 	requireQuery(["code"]),
-	async (req: Req, res: Res) => {
+	async (req, res) => {
 		const code = req.query.code;
 		try {
 			const session = await loginToDiscord(
@@ -59,7 +65,7 @@ export const callback: Handler[] = [
 				type: "discord",
 				id: user.id,
 				extra: {
-					username: user.username,
+					name: user.username,
 					avatar: `https://cdn.discordapp.com/${user.id}/${user.avatar}`,
 				},
 			};
@@ -69,7 +75,7 @@ export const callback: Handler[] = [
 	},
 ];
 
-export const redirect = (req: Req, res: Res) => {
+export const redirect: Redirect = (req: Req, res: Res) => {
 	const cb = encodeURIComponent(
 		new URL("/auth/discord/callback", req.purl).href
 	);
@@ -77,3 +83,5 @@ export const redirect = (req: Req, res: Res) => {
 		`https://discord.com/api/oauth2/authorize?client_id=${id}&redirect_uri=${cb}&response_type=code&scope=identify`
 	);
 };
+
+redirect.savesSession = false;

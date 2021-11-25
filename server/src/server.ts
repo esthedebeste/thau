@@ -5,8 +5,9 @@ import { STATUS_CODES } from "node:http";
 import { fileURLToPath } from "node:url";
 import sirv from "sirv";
 import * as discord from "./accounts/discord.js";
+import * as github from "./accounts/github.js";
 import { getsert } from "./database.js";
-import { Req, Res, secrets } from "./utils.js";
+import { Handler, Req, Res, secrets } from "./utils.js";
 
 type ThauToken = {
 	uid: string;
@@ -20,7 +21,7 @@ const privateKey = createPrivateKey({ key: privateJWK, format: "jwk" });
 const decodeB64url = (str: string) => Buffer.from(str, "base64url");
 const sessionPass = sessionSecret.map(decodeB64url);
 
-const done = async (req: Req, res: Res) => {
+const postlogin: Handler = async (req, res) => {
 	const { callback, user } = req.session;
 	if (!callback) return res.status(400).send("No callback");
 
@@ -40,6 +41,14 @@ const done = async (req: Req, res: Res) => {
 	res.deleteSession();
 	res.redirect(redirect);
 };
+const preredirect =
+	(saveSession = true): Handler =>
+	(req, res) => {
+		if (req.query.callback) {
+			req.session.callback = req.query.callback;
+			if (saveSession) res.saveSession();
+		} else if (!req.session.callback) res.error("No Callback", 400);
+	};
 const coggers = new Coggers(
 	{
 		$: [
@@ -90,9 +99,7 @@ const coggers = new Coggers(
 		],
 		keys: {
 			$get(_, res) {
-				res.json({
-					key: publicJWK,
-				});
+				res.json({ key: publicJWK });
 			},
 		},
 		auth: {
@@ -103,9 +110,14 @@ const coggers = new Coggers(
 				res.saveSession();
 				res.sendFile(new URL("../static/auth.html", import.meta.url));
 			},
+			// future: construct this bluepart automatically
 			discord: {
-				$get: discord.redirect,
-				callback: { $get: [discord.callback, done] },
+				$get: [preredirect(!discord.redirect.savesSession), discord.redirect],
+				callback: { $get: [discord.callback, postlogin] },
+			},
+			github: {
+				$get: [preredirect(!github.redirect.savesSession), github.redirect],
+				callback: { $get: [github.callback, postlogin] },
 			},
 		},
 	},

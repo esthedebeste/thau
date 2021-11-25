@@ -4,7 +4,7 @@
 	"description": "Server side of thau.",
 	"main": "dist/server.js",
 	"scripts": {
-		"start": "node --experimental-json-modules .",
+		"start": "node .",
 		"build": "tsc",
 		"dev": "tsm ./src/server.ts"
 	},
