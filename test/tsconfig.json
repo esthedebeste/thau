@@ -1,9 +1,10 @@
 {
+	"include": ["."],
 	"compilerOptions": {
-		"noEmit": true,
-		"target": "ES2019",
+		"target": "ESNext",
 		"module": "ESNext",
 		"moduleResolution": "node",
+		"outDir": "dist",
 		"isolatedModules": true,
 		"downlevelIteration": true,
 		"noImplicitAny": false,

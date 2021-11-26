@@ -1,6 +1,6 @@
 import { Coggers, express } from "coggers";
 import { coggersSession } from "coggers-session";
-import { createPrivateKey, createSign } from "node:crypto";
+import { webcrypto } from "node:crypto";
 import { STATUS_CODES } from "node:http";
 import { fileURLToPath } from "node:url";
 import sirv from "sirv";
@@ -9,6 +9,7 @@ import * as github from "./accounts/github.js";
 import { getsert } from "./database.js";
 import { Handler, Req, Res, secrets } from "./utils.js";
 
+const { subtle } = webcrypto as unknown as typeof globalThis.Crypto.prototype;
 type ThauToken = {
 	uid: string;
 	iat: number;
@@ -17,7 +18,14 @@ type ThauToken = {
 const { publicKey: publicJWK, privateKey: privateJWK } = secrets("signing");
 const sessionSecret: string[] = secrets("session");
 
-const privateKey = createPrivateKey({ key: privateJWK, format: "jwk" });
+const SHATYPE = "SHA-384";
+const privateKey = await subtle.importKey(
+	"jwk",
+	privateJWK,
+	{ name: "ECDSA", hash: SHATYPE, namedCurve: privateJWK.crv },
+	false,
+	["sign"]
+);
 const decodeB64url = (str: string) => Buffer.from(str, "base64url");
 const sessionPass = sessionSecret.map(decodeB64url);
 
@@ -31,12 +39,17 @@ const postlogin: Handler = async (req, res) => {
 		iat: Date.now() / 1000,
 		aud: callback,
 	};
-	const strToken = JSON.stringify(token);
-	const sign = createSign("SHA256");
-	sign.update(strToken);
-	sign.end();
-	const signature = sign.sign(privateKey).toString("base64url");
-	const b64token = Buffer.from(strToken).toString("base64url");
+	const bufToken = Buffer.from(JSON.stringify(token));
+	const sign = await subtle.sign(
+		{
+			name: "ECDSA",
+			hash: { name: SHATYPE },
+		},
+		privateKey,
+		bufToken
+	);
+	const signature = Buffer.from(sign).toString("base64url");
+	const b64token = bufToken.toString("base64url");
 	const redirect = `${callback}?token=${b64token}&signature=${signature}`;
 	res.deleteSession();
 	res.redirect(redirect);
@@ -71,6 +84,7 @@ const coggers = new Coggers(
 			(req, res) => {
 				if (req.headers["x-forwarded-proto"])
 					req.purl.protocol = req.headers["x-forwarded-proto"] + ":";
+				res.set("Access-Control-Allow-Origin", "*");
 				res.error = (msg: string, code = 400) => res.status(code).send(msg);
 			},
 			process.env.NODE_ENV === "production"
@@ -92,14 +106,14 @@ const coggers = new Coggers(
 									` \x1b[1m${color + code} \x1b[0m${color}` +
 									(res.statusMessage || STATUS_CODES[code]) +
 									` \x1b[0m${req.url}` +
-									(type === 3 ? " => " + res.headers.Location : "")
+									(res.headers.Location ? " => " + res.headers.Location : "")
 							);
 						});
 				  },
 		],
 		keys: {
 			$get(_, res) {
-				res.json({ key: publicJWK });
+				res.json({ key: publicJWK, shatype: SHATYPE });
 			},
 		},
 		auth: {

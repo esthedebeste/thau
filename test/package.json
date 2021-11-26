@@ -1,13 +1,6 @@
 {
-	"dependencies": {
-		"@types/express": "^4.17.13",
-		"coggers": "^1.5.0",
-		"express": "^4.17.1",
-		"thau": "file:../client"
+	"devDependencies": {
+		"express": "^4.17.1"
 	},
-	"type": "module",
-	"main": "src/test.ts",
-	"scripts": {
-		"start": "tsm ."
-	}
+	"type": "module"
 }

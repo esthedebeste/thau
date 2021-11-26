@@ -17,5 +17,13 @@
 		"@typescript-eslint/ban-ts-comment": "off",
 		"@typescript-eslint/no-explicit-any": "off"
 	},
-	"root": true
+	"root": true,
+	"overrides": [
+		{
+			"files": ["*.js"],
+			"env": {
+				"browser": true
+			}
+		}
+	]
 }

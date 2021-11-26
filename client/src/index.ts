@@ -1,17 +1,14 @@
-import type { JsonWebKey, KeyObject } from "node:crypto";
-import * as crypto from "node:crypto";
-import type { IncomingMessage } from "node:http";
-import * as http from "node:http";
-import * as https from "node:https";
-
-const request = (url: URL): Promise<IncomingMessage> => {
-	if (url.protocol === "https:")
-		return new Promise(resolve => https.get(url, resolve));
-	else return new Promise(resolve => http.get(url, resolve));
-};
 export type ThauOptions = {
 	/** Defaults to https://thau.herokuapp.com/keys */
 	url?: string;
+	/** Defaults to 120 */
+	expirySecs?: number;
+	/**
+	 * url(s) that the handler is mapped to.
+	 * protocol-sensitive, Required to prevent host-spoofing.
+	 * (Do not include localhost in this array in production!!!)
+	 */
+	urls: string[];
 };
 
 /** A bit similar to JWT's, `uid` is the user id. */
@@ -21,34 +18,25 @@ export type ThauToken = {
 	aud: string;
 };
 
-export class Thau {
+type ThauI = {
 	url: URL;
-	key: KeyObject;
-	constructor({ url = "https://thau.herokuapp.com/keys" }: ThauOptions = {}) {
-		this.url = new URL(url);
-	}
 	/** Refreshes signature keys. */
-	async refreshData() {
-		type KeysResponse = {
-			key: JsonWebKey;
-		};
-		const res = await request(this.url);
-		let body = "";
-		for await (const chunk of res) body += chunk;
-		const json: KeysResponse = JSON.parse(body);
-		this.key = crypto.createPublicKey({
-			format: "jwk",
-			key: json.key,
-		});
-	}
+	refreshData(): Promise<void>;
+	/** token and signature in base64url format */
+	verify(token: string, signature: string): Promise<ThauToken>;
+};
 
-	async verify(data: Buffer, signature: Buffer) {
-		if (this.key == null) await this.refreshData();
-		const verifier = crypto.createVerify("SHA256");
-		verifier.update(data);
-		verifier.end();
-		return verifier.verify(this.key, signature);
-	}
+const isWeb = typeof window !== "undefined";
+
+export const Thau: {
+	new (options?: ThauOptions): ThauI;
+	prototype: ThauI;
+} = (isWeb ? await import("./web.js") : await import("./node.js")).Thau;
+
+function THROW() {
+	throw new Error("Thau middleware is not available in a web environment.");
 }
-
-export * from "./middleware.js";
+export const { coggers, express } = (
+	isWeb ? { coggers: THROW, express: THROW } : await import("./middleware.js")
+) as typeof import("./middleware.js");
+export type { MWOptions, ThauExtended } from "./middleware.js";
