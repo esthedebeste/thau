@@ -27,11 +27,11 @@ const coggers = new Coggers({
 			}),
 			(req, res) => {
 				res.html(
-					`<style>html{font-family:system-ui;}code{font-weight:bold;border:2px solid #ccc;}</style>Data:${JSON.stringify(
+					`<style>html{font-family:system-ui;}code{font-weight:bold;border:2px solid #ccc;}</style>Data from server: <code>${JSON.stringify(
 						req.thau,
 						null,
 						2
-					)} <br> Script accepts: <code data-keyurl="${keyURL}" id="scriptok"></code><script type="module" src="/script.js"></script>`
+					)}</code> <br> Data from browser: <code data-keyurl="${keyURL}" id="scriptdata"></code><script type="module" src="/script.js"></script>`
 				);
 			},
 		],

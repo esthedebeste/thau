@@ -19,25 +19,21 @@ export type ThauError =
 
 const tokenKeys = ["uid", "iat", "aud"];
 const localhostRe = /^https?:\/\/(?:localhost|127\.0\.0\.1|192\.168\.)/;
-export const createThau = <T, S>({
-	verify,
-	base64url,
-	stringify,
-	getData,
-}: {
-	base64url(data: string): S;
-	stringify(data: S): string;
-	verify(
-		key: T,
-		token: S,
-		signature: S,
-		shatype: string
-	): boolean | Promise<boolean>;
-	getData(url: string): Promise<{ key: T; shatype: string }>;
-}) =>
+export const createThau = <S extends Uint8Array>(
+	subtle: SubtleCrypto,
+	{
+		base64url,
+		stringify,
+		getJSON,
+	}: {
+		base64url(data: string): S;
+		stringify(data: S): string;
+		getJSON(url: string): Promise<{ key: JsonWebKey; shatype: string }>;
+	}
+) =>
 	class Thau {
 		url: URL;
-		key: T;
+		key: CryptoKey;
 		urls: string[];
 		expirySecs: number;
 		shatype: string;
@@ -57,8 +53,18 @@ export const createThau = <T, S>({
 
 		/** Refreshes signature keys. */
 		async refreshData(): Promise<void> {
-			const { key, shatype } = await getData(this.url.href);
-			this.key = key;
+			const { key, shatype } = await getJSON(this.url.href);
+			this.key = await subtle.importKey(
+				"jwk",
+				key,
+				{
+					name: "ECDSA",
+					hash: { name: shatype },
+					namedCurve: key.crv,
+				},
+				false,
+				["verify"]
+			);
 			this.shatype = shatype;
 		}
 
@@ -70,11 +76,11 @@ export const createThau = <T, S>({
 
 			const token = base64url(tokenb64url);
 
-			const ok = await verify(
+			const ok = await subtle.verify(
+				{ name: "ECDSA", hash: this.shatype },
 				this.key,
-				token,
 				base64url(signatureb64url),
-				this.shatype
+				token
 			);
 			if (!ok) throw <InvalidSignature>["invalid_signature", signatureb64url];
 

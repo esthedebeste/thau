@@ -1,10 +1,12 @@
 {
 	"name": "thau",
 	"author": "tbhmens",
-	"version": "1.0.1",
+	"version": "1.1.0",
 	"description": "Easy user authentication.",
 	"exports": {
-		"node": "./dist/index.js"
+		"default": "./dist/index.js",
+		"node": "./dist/node.js",
+		"browser": "./dist/web.js"
 	},
 	"types": "./dist/index.d.ts",
 	"scripts": {
