@@ -6,7 +6,7 @@ const scriptok = document.getElementById("scriptok");
 const keyurl = scriptok.dataset.keyurl;
 const loc = Object.fromEntries(new URLSearchParams(location.search));
 const thau = new Thau({
-	urls: [`http://localhost:${location.port}/`],
+	urls: [`http://localhost:${location.port}/callback`],
 	url: keyurl,
 });
 

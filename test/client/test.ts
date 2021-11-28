@@ -3,9 +3,6 @@ import sirv from "sirv";
 import { fileURLToPath } from "url";
 import { coggers as coggersMW } from "../../client/src/index.js";
 import "../../server/src/server.js";
-// Test web-node interop
-// import { server } from "../../server/src/server.js";
-// console.log(server);
 const thauPort = process.env.PORT || 8080;
 const port = +thauPort + 1;
 const thauURL = `http://localhost:${thauPort}/`;
@@ -30,11 +27,11 @@ const coggers = new Coggers({
 			}),
 			(req, res) => {
 				res.html(
-					`Data: <br>${JSON.stringify(
+					`<style>html{font-family:system-ui;}code{font-weight:bold;border:2px solid #ccc;}</style>Data:${JSON.stringify(
 						req.thau,
 						null,
 						2
-					)} Script accepts: <span data-keyurl="${keyURL}" id="scriptok"></span><script type="module" src="/script.js"></script>`
+					)} <br> Script accepts: <code data-keyurl="${keyURL}" id="scriptok"></code><script type="module" src="/script.js"></script>`
 				);
 			},
 		],
