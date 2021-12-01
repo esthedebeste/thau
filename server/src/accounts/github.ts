@@ -79,7 +79,7 @@ export const callback: Callback = [
 export const redirect: Redirect = (req, res) => {
 	const cb = new URL("/auth/github/callback", req.purl).href;
 	res.redirect(
-		`https://github.com/login/oauth/authorize?scope=user:email&client_id=${id}&redirect_uri=${cb}`
+		`https://github.com/login/oauth/authorize?scope=user:email&client_id=${id}&redirect_uri=${cb}&login` /* login query parameter to make github not automatically authenticate */
 	);
 };
 

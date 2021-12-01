@@ -7,6 +7,7 @@ import sirv from "sirv";
 import * as discord from "./accounts/discord.js";
 import * as github from "./accounts/github.js";
 import { getsert } from "./database.js";
+import { sample } from "./sample.js";
 import { Handler, Req, Res, secrets } from "./utils.js";
 
 const { subtle } = webcrypto as unknown as typeof globalThis.Crypto.prototype;
@@ -134,6 +135,7 @@ const coggers = new Coggers(
 				callback: { $get: [github.callback, postlogin] },
 			},
 		},
+		sample,
 	},
 	{
 		xPoweredBy: "a bunch of little cogwheels spinning around",

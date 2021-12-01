@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Thau - Custom Frontend Sample</title>
+		<style>
+			html {
+				font-family: system-ui;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Thau - Custom Frontend Sample</h1>
+		<p>
+			Thau supports custom frontend, if you don't want your users to have to use
+			the thau site to initiate login. Instead of redirecting to the
+			http://thau/auth, you can redirect the user to
+			http://thau/auth/[discord|github]
+		</p>
+		<a href="/auth/discord?callback=/sample/callback">Log In With Discord</a
+		><br />
+		<a href="/auth/github?callback=/sample/callback">Log In With GitHub</a>
+
+		<br />
+		<br />
+		<br />
+		<a href="/sample/">simple example</a>
+	</body>
+</html>

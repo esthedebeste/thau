@@ -7,7 +7,7 @@
 		"test": "tsm ./test/server/test.ts -- --dev",
 		"test-remote": "tsm ./test/server/test_remote.ts",
 		"build": "tsc -p ./server && tsc -p ./client",
-		"heroku-postbuild": "npx -y --package=typescript@4.5.2 tsc -p ./server"
+		"heroku-postbuild": " npx -y --package=typescript@4.5.2 tsc -p ./client && npx -y --package=typescript@4.5.2 tsc -p ./server"
 	},
 	"devDependencies": {
 		"@types/node": "^16.11.9",
