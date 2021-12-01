@@ -17,7 +17,6 @@
 		"coggers": "^1.5.1",
 		"coggers-session": "^1.2.1",
 		"pg": "^8.7.1",
-		"sirv": "^1.0.18",
 		"undici": "^4.10.2"
 	},
 	"devDependencies": {

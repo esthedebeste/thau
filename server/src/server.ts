@@ -1,9 +1,7 @@
-import { Coggers, express } from "coggers";
+import { Coggers, serveStatic } from "coggers";
 import { coggersSession } from "coggers-session";
 import { webcrypto } from "node:crypto";
 import { STATUS_CODES } from "node:http";
-import { fileURLToPath } from "node:url";
-import sirv from "sirv";
 import * as discord from "./accounts/discord.js";
 import * as github from "./accounts/github.js";
 import { getsert } from "./database.js";
@@ -65,13 +63,8 @@ const preredirect =
 	};
 const coggers = new Coggers(
 	{
+		...serveStatic(new URL("../static", import.meta.url)),
 		$: [
-			express(
-				sirv(fileURLToPath(new URL("../static", import.meta.url)), {
-					dev: true,
-					extensions: [],
-				})
-			),
 			coggersSession({
 				password: sessionPass,
 				name: "thau-session",
@@ -84,7 +77,10 @@ const coggers = new Coggers(
 			}),
 			(req, res) => {
 				if (req.headers["x-forwarded-proto"])
-					req.purl.protocol = req.headers["x-forwarded-proto"] + ":";
+					if (req.headers["x-forwarded-proto"] === "http")
+						// Redirect http to https
+						return res.redirect(`https://${req.host}${req.url}`);
+					else req.purl.protocol = req.headers["x-forwarded-proto"] + ":";
 				res.set("Access-Control-Allow-Origin", "*");
 				res.error = (msg: string, code = 400) => res.status(code).send(msg);
 			},

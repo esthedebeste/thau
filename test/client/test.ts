@@ -1,6 +1,4 @@
-import { Coggers, express } from "coggers";
-import sirv from "sirv";
-import { fileURLToPath } from "url";
+import { Coggers, serveStatic } from "coggers";
 import { coggers as coggersMW } from "../../client/src/index.js";
 import "../../server/src/server.js";
 const thauPort = process.env.PORT || 8080;
@@ -13,9 +11,7 @@ const redir = new URL(
 ).href;
 const keyURL = new URL(`/keys`, thauURL).href;
 const coggers = new Coggers({
-	$: express(
-		sirv(fileURLToPath(new URL("../../client/dist", import.meta.url)))
-	),
+	...serveStatic(new URL("../../client/dist", import.meta.url)),
 	$get(_, res) {
 		res.redirect(redir);
 	},
