@@ -52,3 +52,5 @@ export const secrets = (filename: string) =>
 				"utf8"
 			)
 	);
+
+export const prod = !process.env.NODE_ENV?.toLowerCase().includes("prod");

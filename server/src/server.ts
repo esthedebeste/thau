@@ -6,7 +6,7 @@ import * as discord from "./accounts/discord.js";
 import * as github from "./accounts/github.js";
 import { getsert } from "./database.js";
 import { sample } from "./sample.js";
-import { Handler, Req, Res, secrets } from "./utils.js";
+import { Handler, prod, Req, Res, secrets } from "./utils.js";
 
 const { subtle } = webcrypto as unknown as typeof globalThis.Crypto.prototype;
 type ThauToken = {
@@ -28,6 +28,9 @@ const privateKey = await subtle.importKey(
 const decodeB64url = (str: string) => Buffer.from(str, "base64url");
 const sessionPass = sessionSecret.map(decodeB64url);
 
+const prelogin: Handler = (req, res) => {
+	if (!req.session.callback) res.error("No Callback", 400);
+};
 const postlogin: Handler = async (req, res) => {
 	const { callback, user } = req.session;
 	if (!callback) return res.status(400).send("No callback");
@@ -73,6 +76,7 @@ const coggers = new Coggers(
 					sameSite: "Lax",
 					httpOnly: true,
 					path: "/",
+					secure: prod,
 				},
 			}),
 			(req, res) => {
@@ -124,11 +128,11 @@ const coggers = new Coggers(
 			// future: construct this bluepart automatically
 			discord: {
 				$get: [preredirect(!discord.redirect.savesSession), discord.redirect],
-				callback: { $get: [discord.callback, postlogin] },
+				callback: { $get: [prelogin, discord.callback, postlogin] },
 			},
 			github: {
 				$get: [preredirect(!github.redirect.savesSession), github.redirect],
-				callback: { $get: [github.callback, postlogin] },
+				callback: { $get: [prelogin, github.callback, postlogin] },
 			},
 		},
 		sample,

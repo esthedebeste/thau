@@ -4,6 +4,7 @@
 	"private": true,
 	"scripts": {
 		"start": "node ./server",
+		"dev": "tsm ./server/src/server.ts",
 		"test": "tsm ./test/server/test.ts -- --dev",
 		"test-remote": "tsm ./test/server/test_remote.ts",
 		"build": "tsc -p ./server && tsc -p ./client",
