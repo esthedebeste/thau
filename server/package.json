@@ -11,9 +11,9 @@
 	"type": "module",
 	"author": "tbhmens",
 	"license": "MIT",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"dependencies": {
-		"thau": "1.1.0",
+		"thau": "1.1.1",
 		"coggers": "^1.5.2",
 		"coggers-session": "^1.2.1",
 		"pg": "^8.7.1",

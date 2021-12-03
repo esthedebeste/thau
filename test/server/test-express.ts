@@ -1,5 +1,5 @@
 import express from "express";
-import * as thau from "thau/src";
+import * as thau from "../../client/src/index.js";
 
 const app = express();
 app.get("/", (_req, res) => {

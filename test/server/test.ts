@@ -1,5 +1,5 @@
 import { Coggers } from "coggers";
-import * as thau from "thau/src";
+import * as thau from "../../client/src/index.js";
 import "../../server/src/server.js";
 
 const thauPort = process.env.PORT || 8080;
