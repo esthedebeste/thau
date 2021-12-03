@@ -17,7 +17,7 @@ const b64urlToUint6 = (chr: number) =>
 export const Thau = createThau(crypto.subtle, {
 	// base64url modification of base64DecToArr from https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding
 	base64url: (base64url: string) => {
-		const b64 = base64url.replace(/[^A-Za-z0-9_-]/g, ""),
+		const b64 = base64url.replace(/[^\w-]/g, ""),
 			inLen = b64.length,
 			outLen = (inLen * 3 + 1) >> 2,
 			bytes = new Uint8Array(outLen);

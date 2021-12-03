@@ -65,9 +65,10 @@ const coggersHandler = (options: ThauOptions & MWOptions) => {
 		const { token, signature } = req.query as Record<string, string>;
 		try {
 			req.thau = await thau.verify(token, signature);
-		} catch (err) {
-			if (Array.isArray(err)) return await error(err as ThauError, req, res);
-			else return await error(["unknown_error", err], req, res);
+		} catch (error_) {
+			return Array.isArray(error_)
+				? error(error_ as ThauError, req, res)
+				: error(["unknown_error", error_], req, res);
 		}
 	};
 };

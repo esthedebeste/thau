@@ -8,7 +8,7 @@ import { getsert } from "./database.js";
 import { sample } from "./sample.js";
 import { Handler, prod, Req, Res, secrets } from "./utils.js";
 
-const { subtle } = webcrypto as unknown as typeof globalThis.Crypto.prototype;
+const { subtle } = webcrypto as unknown as typeof window.crypto;
 type ThauToken = {
 	uid: string;
 	iat: number;
@@ -25,8 +25,7 @@ const privateKey = await subtle.importKey(
 	false,
 	["sign"]
 );
-const decodeB64url = (str: string) => Buffer.from(str, "base64url");
-const sessionPass = sessionSecret.map(decodeB64url);
+const sessionPass = sessionSecret.map(str => Buffer.from(str, "base64"));
 
 const prelogin: Handler = (req, res) => {
 	if (!req.session.callback) res.error("No Callback", 400);
@@ -100,7 +99,7 @@ const coggers = new Coggers(
 						};
 						res.on("finish", () => {
 							const code = res.statusCode;
-							const type = ~~(code / 100);
+							const type = Math.floor(code / 100);
 							const color: string = colors[type];
 							console.log(
 								req.method +
@@ -138,7 +137,13 @@ const coggers = new Coggers(
 		sample,
 	},
 	{
-		xPoweredBy: "a bunch of little cogwheels spinning around",
+		xPoweredBy: [
+			"a bunch of little cogwheels spinning around",
+			"just a little guy",
+			"three cats in a hat",
+			"one (1) cogger",
+			"gaming",
+		][Math.floor(Math.random() * 6)],
 	}
 );
 

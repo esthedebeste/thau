@@ -5,6 +5,7 @@
 	"extends": [
 		"eslint:recommended",
 		"plugin:@typescript-eslint/recommended",
+		"plugin:unicorn/recommended",
 		"prettier"
 	],
 	"parser": "@typescript-eslint/parser",
@@ -12,10 +13,16 @@
 		"ecmaVersion": 10,
 		"sourceType": "module"
 	},
-	"plugins": ["@typescript-eslint"],
+	"plugins": ["@typescript-eslint", "unicorn"],
 	"rules": {
 		"@typescript-eslint/ban-ts-comment": "off",
-		"@typescript-eslint/no-explicit-any": "off"
+		"@typescript-eslint/no-explicit-any": "off",
+		"unicorn/escape-case": "off",
+		"unicorn/no-hex-escape": "off",
+		"unicorn/prevent-abbreviations": "off",
+		"unicorn/numeric-separators-style": "off",
+		"unicorn/no-null": "off",
+		"unicorn/prefer-code-point": "off"
 	},
 	"root": true,
 	"overrides": [

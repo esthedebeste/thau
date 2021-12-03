@@ -69,7 +69,7 @@ export const callback: Callback = [
 					avatar: `https://cdn.discordapp.com/${user.id}/${user.avatar}`,
 				},
 			};
-		} catch (err) {
+		} catch {
 			res.error("Discord Error.", 500);
 		}
 	},

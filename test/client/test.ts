@@ -1,5 +1,5 @@
 import { Coggers, serveStatic } from "coggers";
-import { coggers as coggersMW } from "../../client/src/index.js";
+import { coggers as coggersMW } from "thau/src";
 import "../../server/src/server.js";
 const thauPort = process.env.PORT || 8080;
 const port = +thauPort + 1;

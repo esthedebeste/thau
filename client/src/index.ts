@@ -18,20 +18,11 @@ export type ThauToken = {
 	aud: string;
 };
 
-type ThauI = {
-	url: URL;
-	/** Refreshes signature keys. */
-	refreshData(): Promise<void>;
-	/** token and signature in base64url format */
-	verify(token: string, signature: string): Promise<ThauToken>;
-};
-
 const isWeb = typeof window !== "undefined";
 
-export const Thau: {
-	new (options?: ThauOptions): ThauI;
-	prototype: ThauI;
-} = (isWeb ? await import("./web.js") : await import("./node.js")).Thau;
+export const Thau = (
+	isWeb ? await import("./web.js") : await import("./node.js")
+).Thau;
 
 function THROW() {
 	throw new Error("Thau middleware is not available in a web environment.");

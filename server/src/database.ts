@@ -1,4 +1,4 @@
-import { readFileSync } from "fs";
+import { readFileSync } from "node:fs";
 import pg from "pg";
 
 const pool = new pg.Pool({
@@ -22,8 +22,9 @@ export const getsert = process.argv.includes("--dev")
 	? async (accountType: string, accountId: string) => {
 			const id = accountType.toLowerCase() + "_" + accountId;
 			globalThis.testdb ??= <typeof testdb>{ users: {}, currentid: 0 };
-			if (id in testdb.users) return testdb.users[id];
-			else return (testdb.users[id] = String(testdb.currentid++));
+			return id in testdb.users
+				? testdb.users[id]
+				: (testdb.users[id] = String(testdb.currentid++));
 	  }
 	: async (accountType: string, accountId: string) => {
 			const id = accountType.toLowerCase() + "_" + accountId;
@@ -34,9 +35,9 @@ export const getsert = process.argv.includes("--dev")
 				const res = await client.query(query2, [id]);
 				await client.query("COMMIT");
 				return res.rows[0].uid;
-			} catch (err) {
+			} catch (error) {
 				await client.query("ROLLBACK");
-				throw err;
+				throw error;
 			} finally {
 				client.release();
 			}

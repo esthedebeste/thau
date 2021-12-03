@@ -7,9 +7,9 @@ import { createThau } from "./thau.js";
 const crypto = webcrypto as unknown as typeof globalThis.Crypto.prototype;
 
 const request = (url: URL): Promise<IncomingMessage> => {
-	if (url.protocol === "https:")
-		return new Promise(resolve => https.get(url, resolve));
-	else return new Promise(resolve => http.get(url, resolve));
+	return url.protocol === "https:"
+		? new Promise(resolve => https.get(url, resolve))
+		: new Promise(resolve => http.get(url, resolve));
 };
 
 export const Thau = createThau(crypto.subtle, {

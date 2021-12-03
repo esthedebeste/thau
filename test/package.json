@@ -1,5 +1,6 @@
 {
 	"devDependencies": {
+		"coggers": "^1.5.2",
 		"express": "^4.17.1"
 	},
 	"type": "module"

@@ -1,6 +1,6 @@
 import type { Request, Response } from "coggers";
 import type { SessionedResponse } from "coggers-session";
-import { readFileSync } from "fs";
+import { readFileSync } from "node:fs";
 
 export type Req = Request & {
 	session: Partial<{

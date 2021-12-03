@@ -19,7 +19,7 @@ export type ThauError =
 
 const tokenKeys = ["uid", "iat", "aud"];
 const localhostRe = /^https?:\/\/(?:localhost|127\.0\.0\.1|192\.168\.)/;
-export const createThau = <S extends Uint8Array>(
+export const createThau = <S extends BufferSource>(
 	subtle: SubtleCrypto,
 	{
 		base64url,
@@ -45,7 +45,7 @@ export const createThau = <S extends Uint8Array>(
 			this.url = new URL(url);
 			this.expirySecs = expirySecs;
 			this.urls = urls;
-			if (urls.find(url => localhostRe.test(url)))
+			if (urls.some(url => localhostRe.test(url)))
 				console.warn(
 					"\x1b[33m[thau] WARNING: You are using localhost in your urls array. Make sure to remove this in production!\x1b[0m"
 				);

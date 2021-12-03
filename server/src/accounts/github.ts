@@ -1,4 +1,4 @@
-import assert from "assert";
+import assert from "node:assert";
 import { request } from "undici";
 import { Callback, Redirect, requireQuery, secrets } from "../utils.js";
 
@@ -50,7 +50,7 @@ async function getGithubUser(token: string): Promise<{
 	let body = "";
 	for await (const chunk of result.body) body += chunk;
 	const data = JSON.parse(body);
-	assert(data.id != null);
+	assert(data.id != null, body);
 	return data;
 }
 
@@ -69,8 +69,8 @@ export const callback: Callback = [
 					avatar: user.avatar_url,
 				},
 			};
-		} catch (err) {
-			console.error(err);
+		} catch (error) {
+			console.error(error);
 			res.error("GitHub Error.", 500);
 		}
 	},
