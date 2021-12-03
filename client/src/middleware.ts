@@ -5,11 +5,21 @@ import {
 	ExpiredToken,
 	InvalidSignature,
 	InvalidToken,
-	MissingQuery,
-	ThauError,
-	UnknownError,
 	WrongAudience,
 } from "./thau.js";
+
+export type MissingQuery = [
+	"missing_query",
+	["token"] | ["signature"] | ["token", "signature"]
+];
+export type UnknownError = ["unknown_error", Error];
+export type ThauError =
+	| MissingQuery
+	| InvalidToken
+	| ExpiredToken
+	| WrongAudience
+	| InvalidSignature
+	| UnknownError;
 
 type baseH = (
 	req: IncomingMessage,

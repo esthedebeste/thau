@@ -4,6 +4,7 @@ import { webcrypto } from "node:crypto";
 import { STATUS_CODES } from "node:http";
 import * as discord from "./accounts/discord.js";
 import * as github from "./accounts/github.js";
+import * as twitch from "./accounts/twitch.js";
 import { getsert } from "./database.js";
 import { sample } from "./sample.js";
 import { Handler, prod, Req, Res, secrets } from "./utils.js";
@@ -31,7 +32,8 @@ const prelogin: Handler = (req, res) => {
 	if (!req.session.callback) res.error("No Callback", 400);
 };
 const postlogin: Handler = async (req, res) => {
-	const { callback, user } = req.session;
+	const user = req.user;
+	const { callback } = req.session;
 	if (!callback) return res.status(400).send("No callback");
 
 	const uid = await getsert(user.type, user.id);
@@ -59,7 +61,7 @@ const preredirect =
 	(saveSession = true): Handler =>
 	(req, res) => {
 		if (req.query.callback) {
-			req.session.callback = req.query.callback;
+			req.session = { callback: req.query.callback };
 			if (saveSession) res.saveSession();
 		} else if (!req.session.callback) res.error("No Callback", 400);
 	};
@@ -133,6 +135,10 @@ const coggers = new Coggers(
 				$get: [preredirect(!github.redirect.savesSession), github.redirect],
 				callback: { $get: [prelogin, github.callback, postlogin] },
 			},
+			twitch: {
+				$get: [preredirect(!twitch.redirect.savesSession), twitch.redirect],
+				callback: { $get: [prelogin, twitch.callback, postlogin] },
+			},
 		},
 		sample,
 	},
@@ -143,10 +149,9 @@ const coggers = new Coggers(
 			"three cats in a hat",
 			"one (1) cogger",
 			"gaming",
-		][Math.floor(Math.random() * 6)],
+		][Math.floor(Math.random() * 5)],
 	}
 );
-
 const PORT = process.env.PORT || 8080;
 await coggers.listen(PORT);
 console.log(`Thau listening @ http://localhost:${PORT}/`);

@@ -1,12 +1,5 @@
 import { request } from "undici";
-import {
-	Callback,
-	Redirect,
-	Req,
-	requireQuery,
-	Res,
-	secrets,
-} from "../utils.js";
+import { Callback, Redirect, requireQuery, secrets } from "../utils.js";
 
 const { id, secret } = secrets("discord");
 async function loginToDiscord(
@@ -61,7 +54,7 @@ export const callback: Callback = [
 				encodeURIComponent(req.purl.origin + req.purl.pathname)
 			);
 			const user = await getUserData(session.access_token);
-			req.session.user = {
+			req.user = {
 				type: "discord",
 				id: user.id,
 				extra: {
@@ -75,7 +68,7 @@ export const callback: Callback = [
 	},
 ];
 
-export const redirect: Redirect = (req: Req, res: Res) => {
+export const redirect: Redirect = (req, res) => {
 	const cb = encodeURIComponent(
 		new URL("/auth/discord/callback", req.purl).href
 	);

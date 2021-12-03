@@ -61,7 +61,7 @@ export const callback: Callback = [
 		try {
 			const { access_token } = await loginToGithub(code);
 			const user = await getGithubUser(access_token);
-			req.session.user = {
+			req.user = {
 				type: "github",
 				id: String(user.id),
 				extra: {

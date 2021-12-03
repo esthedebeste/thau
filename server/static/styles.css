@@ -55,6 +55,9 @@ h1.log-in {
 .account.github {
 	background-color: #15101f;
 }
+.account.twitch {
+	background-color: black;
+}
 
 .icon {
 	display: inline;

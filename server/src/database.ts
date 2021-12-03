@@ -1,3 +1,4 @@
+import assert from "node:assert";
 import { readFileSync } from "node:fs";
 import pg from "pg";
 
@@ -11,9 +12,9 @@ const pool = new pg.Pool({
 });
 await pool.connect();
 const query1 = `
-INSERT INTO thau_users(id)
-	VALUES($1)
-	ON CONFLICT(id) DO NOTHING;`.trim();
+INSERT INTO thau_users (id) 
+SELECT id FROM (values ($1)) v(id) 
+WHERE NOT EXISTS (SELECT 1 FROM thau_users WHERE id=$1);`.trim();
 const query2 = `SELECT (uid) FROM thau_users WHERE id=$1;`;
 
 declare const testdb: { users: Record<string, string>; currentid: number };
@@ -34,11 +35,12 @@ export const getsert = process.argv.includes("--dev")
 				await client.query(query1, [id]);
 				const res = await client.query(query2, [id]);
 				await client.query("COMMIT");
-				return res.rows[0].uid;
+				assert(typeof res.rows[0].uid === "string");
+				client.release();
+				return res.rows[0].uid as string;
 			} catch (error) {
 				await client.query("ROLLBACK");
-				throw error;
-			} finally {
 				client.release();
+				throw error;
 			}
 	  };

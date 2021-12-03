@@ -5,16 +5,25 @@ import { readFileSync } from "node:fs";
 export type Req = Request & {
 	session: Partial<{
 		callback: string;
-		uid: string;
-		user: {
-			type: "discord" | "github" /* TODO: | "twitch" | "youtube" etc */;
-			id: string;
-			extra?: {
-				name: string;
-				avatar: string;
+		login: {
+			twitch: {
+				nonce: string;
+				state: string;
 			};
 		};
 	}>;
+	user?: {
+		type:
+			| "discord"
+			| "github"
+			| "twitch" /* TODO: | "twitter" | "youtube" etc */;
+		id: string;
+		/* TODO: find out where to put the extra data (should it be signed?) */
+		extra?: {
+			name: string;
+			avatar: string;
+		};
+	};
 };
 
 export type Res = Response &

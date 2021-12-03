@@ -13,10 +13,11 @@
 	"license": "MIT",
 	"version": "1.1.1",
 	"dependencies": {
-		"thau": "1.1.1",
 		"coggers": "^1.5.2",
 		"coggers-session": "^1.2.1",
+		"jose": "^4.3.7",
 		"pg": "^8.7.1",
+		"thau": "1.1.1",
 		"undici": "^4.11.0"
 	},
 	"devDependencies": {

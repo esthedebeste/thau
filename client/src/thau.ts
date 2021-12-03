@@ -1,21 +1,9 @@
 import { ThauOptions, ThauToken } from "./index.js";
 
-export type MissingQuery = [
-	"missing_query",
-	["token"] | ["signature"] | ["token", "signature"]
-];
 export type InvalidToken = ["invalid_token", (keyof ThauToken)[]];
 export type ExpiredToken = ["expired_token", number];
 export type WrongAudience = ["wrong_audience", string];
 export type InvalidSignature = ["invalid_signature", string];
-export type UnknownError = ["unknown_error", Error];
-export type ThauError =
-	| MissingQuery
-	| InvalidToken
-	| ExpiredToken
-	| WrongAudience
-	| InvalidSignature
-	| UnknownError;
 
 const tokenKeys = ["uid", "iat", "aud"];
 const localhostRe = /^https?:\/\/(?:localhost|127\.0\.0\.1|192\.168\.)/;
