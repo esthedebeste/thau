@@ -1,4 +1,3 @@
-/* eslint-env browser */
 import { createThau } from "./thau.js";
 
 const b64urlToUint6 = (chr: number) =>
@@ -34,6 +33,6 @@ export const Thau = createThau(crypto.subtle, {
 		}
 		return bytes;
 	},
-	getJSON: (url: string) => fetch(url).then(res => res.json()),
+	getJSON: (url: URL) => fetch(url.href).then(res => res.json()),
 	stringify: (arr: Uint8Array) => new TextDecoder().decode(arr),
 });

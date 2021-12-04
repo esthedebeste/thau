@@ -1,12 +1,34 @@
-import { ThauOptions, ThauToken } from "./index.js";
-
 export type InvalidToken = ["invalid_token", (keyof ThauToken)[]];
 export type ExpiredToken = ["expired_token", number];
 export type WrongAudience = ["wrong_audience", string];
 export type InvalidSignature = ["invalid_signature", string];
+export type ThauOptions = {
+	/** Defaults to https://thau.herokuapp.com/keys */
+	url?: string;
+	/** Defaults to 120 */
+	expirySecs?: number;
+	/**
+	 * url(s) that the handler is mapped to.
+	 * protocol-sensitive, required to prevent host-spoofing.
+	 * (Do not include localhost in this array in production!!!)
+	 */
+	urls: string[];
+};
 
 const tokenKeys = ["uid", "iat", "aud"];
 const localhostRe = /^https?:\/\/(?:localhost|127\.0\.0\.1|192\.168\.)/;
+export type ThauToken = {
+	/** Thau User ID */
+	uid: string;
+	iat: number;
+	aud: string;
+};
+
+export type Thau = new (options: ThauOptions) => {
+	refreshData(): Promise<void>;
+	verify(tokenb64url: string, signatureb64url: string): Promise<ThauToken>;
+};
+
 export const createThau = <S extends BufferSource>(
 	subtle: SubtleCrypto,
 	{
@@ -16,9 +38,9 @@ export const createThau = <S extends BufferSource>(
 	}: {
 		base64url(data: string): S;
 		stringify(data: S): string;
-		getJSON(url: string): Promise<{ key: JsonWebKey; shatype: string }>;
+		getJSON(url: URL): Promise<{ key: JsonWebKey; shatype: string }>;
 	}
-) =>
+): Thau =>
 	class Thau {
 		url: URL;
 		key: CryptoKey;
@@ -41,7 +63,7 @@ export const createThau = <S extends BufferSource>(
 
 		/** Refreshes signature keys. */
 		async refreshData(): Promise<void> {
-			const { key, shatype } = await getJSON(this.url.href);
+			const { key, shatype } = await getJSON(this.url);
 			this.key = await subtle.importKey(
 				"jwk",
 				key,
