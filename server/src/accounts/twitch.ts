@@ -75,7 +75,7 @@ export const callback: Callback = [
 const claims = JSON.stringify({
 	id_token: { picture: true, preferred_username: true },
 });
-const baseRedirURL = `https://id.twitch.tv/oauth2/authorize?client_id=${id}&response_type=code&scope=openid&claims=${claims}`;
+const baseRedirURL = `https://id.twitch.tv/oauth2/authorize?client_id=${id}&response_type=code&scope=openid&claims=${claims}&force_verify=true`;
 export const redirect: Redirect = (req, res) => {
 	const cb = new URL("/auth/twitch/callback", req.purl).href;
 	const twitch = {

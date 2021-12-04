@@ -6,9 +6,8 @@
 		"start": "node ./server",
 		"dev": "tsm ./server/src/server.ts -- --dev",
 		"test": "tsm ./test/server/test.ts -- --dev",
-		"build": "tsc -p ./client && tsc -p ./server",
-		"finalbuild": "rimraf ./client/dist && tsc -p ./client && prettier ./client/dist/** -w && rimraf ./server/dist && tsc -p ./server && prettier ./server/dist/** -w",
-		"heroku-postbuild": "npx -y --package=typescript@4.5.2 tsc -p ./client && npx -y --package=typescript@4.5.2 tsc -p ./server"
+		"heroku-prebuild": "npm i rimraf@3.0.2 typescript@4.5.2 prettier@2.4.1 --no-save",
+		"build": "rimraf ./client/dist && tsc -p ./client && prettier ./client/dist/** -w && rimraf ./server/dist && tsc -p ./server && prettier ./server/dist/** -w"
 	},
 	"devDependencies": {
 		"@types/node": "^16.11.9",
