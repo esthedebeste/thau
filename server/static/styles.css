@@ -1,5 +1,7 @@
 html {
 	background-image: url("https://images.unsplash.com/photo-1637611331620-51149c7ceb94?auto=format&fit=crop&w=2560&h=1440&q=60");
+	background-size: cover;
+	background-attachment: fixed;
 	font-family: system-ui, sans-serif;
 }
 .container {
@@ -52,11 +54,17 @@ h1.log-in {
 	text-align: center;
 }
 
+.account.discord {
+	background-color: #18191c;
+}
 .account.github {
-	background-color: #15101f;
+	background-color: #0d1117;
 }
 .account.twitch {
-	background-color: black;
+	background-color: #0e0e10;
+}
+.account.twitter {
+	background-color: #15181c;
 }
 
 .icon {

@@ -6,7 +6,7 @@
 	"scripts": {
 		"start": "node .",
 		"build": "tsc",
-		"dev": "tsm ./src/server.ts"
+		"dev": "tsm ./src/server.ts -- --dev"
 	},
 	"type": "module",
 	"author": "tbhmens",
@@ -16,6 +16,7 @@
 		"coggers": "^1.5.2",
 		"coggers-session": "^1.2.1",
 		"jose": "^4.3.7",
+		"oauth-1.0a": "^2.2.6",
 		"pg": "^8.7.1",
 		"thau": "1.1.1",
 		"undici": "^4.11.0"

@@ -5,6 +5,7 @@ import { STATUS_CODES } from "node:http";
 import * as discord from "./accounts/discord.js";
 import * as github from "./accounts/github.js";
 import * as twitch from "./accounts/twitch.js";
+import * as twitter from "./accounts/twitter.js";
 import { getsert } from "./database.js";
 import { sample } from "./sample.js";
 import { Handler, prod, Req, Res, secrets } from "./utils.js";
@@ -139,8 +140,15 @@ const coggers = new Coggers(
 				$get: [preredirect(!twitch.redirect.savesSession), twitch.redirect],
 				callback: { $get: [prelogin, twitch.callback, postlogin] },
 			},
+			twitter: {
+				$get: [preredirect(!twitter.redirect.savesSession), twitter.redirect],
+				callback: { $get: [prelogin, twitter.callback, postlogin] },
+			},
 		},
 		sample,
+		$get(_req, res) {
+			res.redirect("/sample");
+		},
 	},
 	{
 		xPoweredBy: [

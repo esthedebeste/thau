@@ -6,9 +6,12 @@ export type Req = Request & {
 	session: Partial<{
 		callback: string;
 		login: {
-			twitch: {
+			twitch?: {
 				nonce: string;
 				state: string;
+			};
+			twitter?: {
+				oauthToken: string;
 			};
 		};
 	}>;
@@ -16,13 +19,14 @@ export type Req = Request & {
 		type:
 			| "discord"
 			| "github"
-			| "twitch" /* TODO: | "twitter" | "youtube" etc */;
+			| "twitch"
+			| "twitter" /* TODO: | "youtube" | "steam" etc */;
 		id: string;
 		/* TODO: find out where to put the extra data (should it be signed?) */
-		extra?: {
+		extra?: Partial<{
 			name: string;
 			avatar: string;
-		};
+		}>;
 	};
 };
 
@@ -62,4 +66,4 @@ export const secrets = (filename: string) =>
 			)
 	);
 
-export const prod = !process.env.NODE_ENV?.toLowerCase().includes("prod");
+export const prod = !process.argv.includes("--dev");

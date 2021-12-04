@@ -10,7 +10,7 @@ import { request } from "undici";
 import { Callback, Redirect, requireQuery, secrets } from "../utils.js";
 
 const generateNonce = (len: number) =>
-	randomBytes((len * 3) / 4).toString("base64url");
+	randomBytes(len * 0.75).toString("base64url");
 const { id, secret } = secrets("twitch");
 const baseTokenURL = `https://id.twitch.tv/oauth2/token?client_id=${id}&client_secret=${secret}&grant_type=authorization_code`;
 let key: KeyObject;

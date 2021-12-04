@@ -1,6 +1,7 @@
 import assert from "node:assert";
 import { readFileSync } from "node:fs";
 import pg from "pg";
+import { prod } from "./utils.js";
 
 const pool = new pg.Pool({
 	connectionString:
@@ -19,7 +20,7 @@ const query2 = `SELECT (uid) FROM thau_users WHERE id=$1;`;
 
 declare const testdb: { users: Record<string, string>; currentid: number };
 
-export const getsert = process.argv.includes("--dev")
+export const getsert = !prod
 	? async (accountType: string, accountId: string) => {
 			const id = accountType.toLowerCase() + "_" + accountId;
 			globalThis.testdb ??= <typeof testdb>{ users: {}, currentid: 0 };
