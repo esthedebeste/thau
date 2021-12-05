@@ -1,0 +1,27 @@
+html(lang=en-US){
+    head{
+        base(href=/auth/)
+        meta(charset=UTF-8)
+        meta(name=viewport content="width=device-width, initial-scale=1.0")
+        link(rel=stylesheet href=styles.css)
+        title[Thau]
+    }
+    body{
+        div.container{
+            h1.log-in[Log In]
+            div.accounts<
+                for([fancy, lowercase] of accounts){
+                    div(class=>"`account ${lowercase}`"){
+                        a(href=>`${lowercase}?callback=${callback}`){
+                            img.icon(
+                                alt=>fancy srcset=>"`assets/${lowercase}.svg 300w, assets/${lowercase}-small.svg 60w`"
+                                sizes="(max-width: 1200px) 60px, 300px"
+                                src=>`assets/${lowercase}.svg`
+                            )
+                        }
+                    }
+                }
+            >
+        }
+    }
+}

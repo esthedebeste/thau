@@ -1,7 +1,8 @@
-import { Coggers, serveStatic } from "coggers";
+import { Coggers, renderEngine, serveStatic } from "coggers";
 import { coggersSession } from "coggers-session";
 import { webcrypto } from "node:crypto";
 import { STATUS_CODES } from "node:http";
+import { renderFile } from "poggies";
 import * as discord from "./accounts/discord.js";
 import * as github from "./accounts/github.js";
 import * as twitch from "./accounts/twitch.js";
@@ -9,7 +10,6 @@ import * as twitter from "./accounts/twitter.js";
 import { getsert } from "./database.js";
 import { sample } from "./sample.js";
 import { Handler, prod, Req, Res, secrets } from "./utils.js";
-
 const { subtle } = webcrypto as unknown as typeof window.crypto;
 type ThauToken = {
 	uid: string;
@@ -61,14 +61,13 @@ const postlogin: Handler = async (req, res) => {
 const preredirect =
 	(saveSession = true): Handler =>
 	(req, res) => {
-		if (req.query.callback) {
-			req.session = { callback: req.query.callback };
-			if (saveSession) res.saveSession();
-		} else if (!req.session.callback) res.error("No Callback", 400);
+		const { callback } = req.query;
+		if (!callback) res.error("No Callback", 400);
+		req.session = { callback };
+		if (saveSession) res.saveSession();
 	};
 const coggers = new Coggers(
 	{
-		...serveStatic(new URL("../static", import.meta.url)),
 		$: [
 			coggersSession({
 				password: sessionPass,
@@ -90,7 +89,7 @@ const coggers = new Coggers(
 				res.set("Access-Control-Allow-Origin", "*");
 				res.error = (msg: string, code = 400) => res.status(code).send(msg);
 			},
-			process.env.NODE_ENV === "production"
+			prod
 				? []
 				: // dev logger
 				  (req, res) => {
@@ -113,6 +112,7 @@ const coggers = new Coggers(
 							);
 						});
 				  },
+			renderEngine(renderFile, new URL("../views", import.meta.url), "pog"),
 		],
 		keys: {
 			$get(_, res) {
@@ -120,12 +120,19 @@ const coggers = new Coggers(
 			},
 		},
 		auth: {
+			...serveStatic(new URL("../static/auth", import.meta.url)),
 			$get(req: Req, res: Res) {
 				const callback = req.query.callback;
 				if (!callback) return res.status(400).send("No callback specified");
-				req.session = { callback };
-				res.saveSession();
-				res.sendFile(new URL("../static/auth.html", import.meta.url));
+				res.render("auth", {
+					callback,
+					accounts: [
+						["Discord", "discord"],
+						["GitHub", "github"],
+						["Twitch", "twitch"],
+						["Twitter", "twitter"],
+					],
+				});
 			},
 			// future: construct this bluepart automatically
 			discord: {
