@@ -1,7 +1,8 @@
 import { createHmac } from "node:crypto";
 import OAuth from "oauth-1.0a";
 import { request } from "undici";
-import { Callback, Redirect, requireQuery, secrets } from "../utils.js";
+import { secrets } from "../../utils.js";
+import { Callback, Redirect, requireQuery } from "../shared.js";
 const { key, secret } = secrets("twitter");
 const oauth = new OAuth({
 	consumer: {
@@ -72,3 +73,4 @@ export const callback: Callback = [
 ];
 
 redirect.savesSession = true;
+export const name = "Twitter";

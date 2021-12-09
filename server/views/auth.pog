@@ -9,10 +9,10 @@ html(lang=en-US){
     }
     body{
         div.container{
-            h1.log-in[Log In]
-            div.accounts<
+            h1.log-in[Sign In With]
+            ul.accounts<
                 for([fancy, lowercase] of accounts){
-                    div(class=>"`account ${lowercase}`"){
+                    li(class=>"`account ${lowercase}`"){
                         a(href=>`${lowercase}?callback=${callback}`){
                             img.icon(
                                 alt=>fancy srcset=>"`assets/${lowercase}.svg 300w, assets/${lowercase}-small.svg 60w`"

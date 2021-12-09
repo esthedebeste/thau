@@ -1,12 +1,9 @@
-import { request } from "undici";
-import { Callback, Redirect, requireQuery, secrets } from "../utils.js";
+import { secrets } from "../../utils.js";
+import { Callback, getJSON, Redirect, requireQuery } from "../shared.js";
 
 const { id, secret } = secrets("discord");
-async function loginToDiscord(
-	code: string,
-	redirect: string
-): Promise<{ access_token: string }> {
-	const result = await request("https://discord.com/api/v8/oauth2/token", {
+const loginToDiscord = (code: string, redirect: string) =>
+	getJSON<{ access_token: string }>("https://discord.com/api/v8/oauth2/token", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/x-www-form-urlencoded",
@@ -14,10 +11,6 @@ async function loginToDiscord(
 		},
 		body: `client_id=${id}&client_secret=${secret}&grant_type=authorization_code&code=${code}&redirect_uri=${redirect}&scope=identify`,
 	});
-	let body = "";
-	for await (const chunk of result.body) body += chunk;
-	return JSON.parse(body);
-}
 
 type User = {
 	id: `${number}`;
@@ -31,18 +24,14 @@ type User = {
 	public_flags: number;
 };
 
-async function getUserData(token: string): Promise<User> {
-	const result = await request("https://discord.com/api/v8/users/@me", {
+const getUserData = (token: string) =>
+	getJSON<User>("https://discord.com/api/v8/users/@me", {
 		method: "GET",
 		headers: {
 			Authorization: `Bearer ${token}`,
 			"User-Agent": "Thau",
 		},
 	});
-	let body = "";
-	for await (const chunk of result.body) body += chunk;
-	return JSON.parse(body);
-}
 
 export const callback: Callback = [
 	requireQuery(["code"]),
@@ -78,3 +67,4 @@ export const redirect: Redirect = (req, res) => {
 };
 
 redirect.savesSession = false;
+export const name = "Discord";

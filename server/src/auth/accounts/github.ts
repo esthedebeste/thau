@@ -1,15 +1,14 @@
-import assert from "node:assert";
-import { request } from "undici";
-import { Callback, Redirect, requireQuery, secrets } from "../utils.js";
+import { secrets } from "../../utils.js";
+import { Callback, getJSON, Redirect, requireQuery } from "../shared.js";
 
 const { id, secret } = secrets("github");
 
-async function loginToGithub(code: string): Promise<{
-	access_token: string;
-	scope: string;
-	token_type: string;
-}> {
-	const result = await request(
+const loginToGithub = (code: string) =>
+	getJSON<{
+		access_token: string;
+		scope: string;
+		token_type: string;
+	}>(
 		`https://github.com/login/oauth/access_token?code=${code}&client_id=${id}&client_secret=${secret}`,
 		{
 			method: "POST",
@@ -19,26 +18,20 @@ async function loginToGithub(code: string): Promise<{
 			},
 		}
 	);
-	assert(result.statusCode === 200);
-	let body = "";
-	for await (const chunk of result.body) body += chunk;
-	const data = JSON.parse(body);
-	return data;
-}
 
 /**
  * https://docs.github.com/en/rest/reference/users#get-the-authenticated-user
  * @param {string} token - GitHub access token
  * @returns {Promise<object>} GitHub user profile
  */
-async function getGithubUser(token: string): Promise<{
-	login: string;
-	id: number;
-	name: string;
-	avatar_url: string;
-	type: "User";
-}> {
-	const result = await request("https://api.github.com/user", {
+const getGithubUser = (token: string) =>
+	getJSON<{
+		login: string;
+		id: number;
+		name: string;
+		avatar_url: string;
+		type: "User";
+	}>("https://api.github.com/user", {
 		method: "GET",
 		headers: {
 			Authorization: `Bearer ${token}`,
@@ -46,13 +39,6 @@ async function getGithubUser(token: string): Promise<{
 			"User-Agent": "Thau",
 		},
 	});
-	if (result.statusCode !== 200) throw result;
-	let body = "";
-	for await (const chunk of result.body) body += chunk;
-	const data = JSON.parse(body);
-	assert(data.id != null, body);
-	return data;
-}
 
 export const callback: Callback = [
 	requireQuery(["code"]),
@@ -84,3 +70,4 @@ export const redirect: Redirect = (req, res) => {
 };
 
 redirect.savesSession = false;
+export const name = "GitHub";

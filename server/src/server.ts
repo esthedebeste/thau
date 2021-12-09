@@ -1,15 +1,12 @@
-import { Coggers, renderEngine, serveStatic } from "coggers";
+import { Coggers, renderEngine } from "coggers";
 import { coggersSession } from "coggers-session";
 import { webcrypto } from "node:crypto";
 import { STATUS_CODES } from "node:http";
 import { renderFile } from "poggies";
-import * as discord from "./accounts/discord.js";
-import * as github from "./accounts/github.js";
-import * as twitch from "./accounts/twitch.js";
-import * as twitter from "./accounts/twitter.js";
+import { auth } from "./auth/blueprint.js";
 import { getsert } from "./database.js";
 import { sample } from "./sample.js";
-import { Handler, prod, Req, Res, secrets } from "./utils.js";
+import { Handler, prod, secrets } from "./utils.js";
 const { subtle } = webcrypto as unknown as typeof window.crypto;
 type ThauToken = {
 	uid: string;
@@ -84,9 +81,17 @@ const coggers = new Coggers(
 				if (req.headers["x-forwarded-proto"])
 					if (req.headers["x-forwarded-proto"] === "http")
 						// Redirect http to https
-						return res.redirect(`https://${req.host}${req.url}`);
+						return res.redirect(`https://${req.host}${req.url}`, 301);
 					else req.purl.protocol = req.headers["x-forwarded-proto"] + ":";
-				res.set("Access-Control-Allow-Origin", "*");
+				res.set({
+					"Strict-Transport-Security": "max-age=63072000",
+					"Access-Control-Allow-Origin": "*",
+					"X-Content-Type-Options": "nosniff",
+					"X-Frame-Options": "DENY",
+					"Content-Security-Policy":
+						"default-src 'none'; style-src 'self'; script-src 'self'; img-src 'self' https://images.unsplash.com;",
+					"X-XSS-Protection": "1; mode=block",
+				});
 				res.error = (msg: string, code = 400) => res.status(code).send(msg);
 			},
 			prod
@@ -119,39 +124,7 @@ const coggers = new Coggers(
 				res.json({ key: publicJWK, shatype: SHATYPE });
 			},
 		},
-		auth: {
-			...serveStatic(new URL("../static/auth", import.meta.url)),
-			$get(req: Req, res: Res) {
-				const callback = req.query.callback;
-				if (!callback) return res.status(400).send("No callback specified");
-				res.render("auth", {
-					callback,
-					accounts: [
-						["Discord", "discord"],
-						["GitHub", "github"],
-						["Twitch", "twitch"],
-						["Twitter", "twitter"],
-					],
-				});
-			},
-			// future: construct this bluepart automatically
-			discord: {
-				$get: [preredirect(!discord.redirect.savesSession), discord.redirect],
-				callback: { $get: [prelogin, discord.callback, postlogin] },
-			},
-			github: {
-				$get: [preredirect(!github.redirect.savesSession), github.redirect],
-				callback: { $get: [prelogin, github.callback, postlogin] },
-			},
-			twitch: {
-				$get: [preredirect(!twitch.redirect.savesSession), twitch.redirect],
-				callback: { $get: [prelogin, twitch.callback, postlogin] },
-			},
-			twitter: {
-				$get: [preredirect(!twitter.redirect.savesSession), twitter.redirect],
-				callback: { $get: [prelogin, twitter.callback, postlogin] },
-			},
-		},
+		auth: auth(preredirect, prelogin, postlogin),
 		sample,
 		$get(_req, res) {
 			res.redirect("/sample");
