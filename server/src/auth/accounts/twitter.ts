@@ -1,76 +1,91 @@
-import { createHmac } from "node:crypto";
-import OAuth from "oauth-1.0a";
+import { createHash } from "node:crypto";
 import { request } from "undici";
 import { secrets } from "../../utils.js";
-import { Callback, Redirect, requireQuery } from "../shared.js";
-const { key, secret } = secrets("twitter");
-const oauth = new OAuth({
-	consumer: {
-		key,
-		secret,
-	},
-	signature_method: "HMAC-SHA1",
-	hash_function: (base_string, key) =>
-		createHmac("sha1", key).update(base_string).digest("base64"),
-});
+import {
+	Callback,
+	generateNonce,
+	getJSON,
+	Redirect,
+	requireQuery,
+} from "../shared.js";
+const {
+	oauth2: { id, secret },
+} = secrets("twitter");
+const baseRedirURL = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${id}&scope=users.read%20tweet.read&code_challenge_method=S256`;
 export const redirect: Redirect = async (req, res) => {
-	const cb = new URL("/auth/twitter/callback", req.purl).href;
-	const tokenRequestURL =
-		"https://api.twitter.com/oauth/request_token?oauth_callback=" +
-		encodeURIComponent(cb);
-	const authorize = oauth.authorize({
-		method: "POST",
-		url: tokenRequestURL,
-	});
-	const result = await request(tokenRequestURL, {
-		method: "POST",
-		headers: {
-			Authorization: oauth.toHeader(authorize).Authorization,
-		},
-	});
-	let body = "";
-	for await (const chunk of result.body) body += chunk;
-	const token = Object.fromEntries(new URLSearchParams(body)) as {
-		oauth_token: string;
-		oauth_token_secret: string;
-		oauth_callback_confirmed: "true";
+	const codeVerifier = generateNonce(64);
+	const codeChallenge = createHash("SHA256")
+		.update(codeVerifier)
+		.digest("base64url");
+	const twitter = {
+		codeVerifier,
+		state: generateNonce(64),
 	};
-	if (token.oauth_callback_confirmed !== "true")
-		return res.error("Twitter Error", 500);
-	req.session.login = { twitter: { oauthToken: token.oauth_token } };
+	req.session.login = { twitter };
 	res.saveSession();
+	const cb = new URL("/auth/twitter/callback", req.purl).href;
 	res.redirect(
-		"https://api.twitter.com/oauth/authorize?oauth_token=" + token.oauth_token
+		baseRedirURL +
+			`&redirect_uri=${cb}&code_challenge=${codeChallenge}&state=${twitter.state}`
 	);
 };
-export const callback: Callback = [
-	requireQuery(["oauth_token", "oauth_verifier"]),
-	async (req, res) => {
-		const { oauth_token, oauth_verifier } = req.query;
-		const { oauthToken } = req.session.login.twitter;
-		if (oauthToken !== oauth_token) return res.error("Twitter Error", 400);
+redirect.savesSession = true;
 
-		const result = await request(
-			`https://api.twitter.com/oauth/access_token?oauth_verifier=${oauth_verifier}&oauth_token=${oauthToken}`,
-			{ method: "POST" }
+const authorization =
+	"Basic " + Buffer.from(`${id}:${secret}`).toString("base64");
+export const callback: Callback = [
+	requireQuery(["state", "code"]),
+	async (req, res) => {
+		const { state: qState, code } = req.query;
+		const { state, codeVerifier } = req.session.login.twitter;
+		if (qState !== state) res.error("Invalid state.", 400);
+		const cb = req.purl.origin + req.purl.pathname;
+		const accessToken = await request(
+			"https://api.twitter.com/2/oauth2/token",
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/x-www-form-urlencoded",
+					"User-Agent": "Thau",
+					authorization,
+				},
+				body: new URLSearchParams({
+					code,
+					grant_type: "authorization_code",
+					client_id: id,
+					redirect_uri: cb,
+					code_verifier: codeVerifier,
+				}).toString(),
+			}
 		);
+		if (accessToken.statusCode !== 200) return res.error("Twitter Error.", 500);
 		let body = "";
-		for await (const chunk of result.body) body += chunk;
-		const token = Object.fromEntries(new URLSearchParams(body)) as {
-			oauth_token: string;
-			oauth_token_secret: string;
-			user_id: string;
-			screen_name: string;
-		};
+		for await (const chunk of accessToken.body) body += chunk;
+		const { access_token } = JSON.parse(body);
+		const { data: user } = await getJSON<{
+			data: {
+				name: string;
+				username: string;
+				id: string;
+				profile_image_url: string;
+			};
+		}>("https://api.twitter.com/2/users/me?user.fields=profile_image_url", {
+			method: "GET",
+			headers: {
+				authorization: `Bearer ${access_token}`,
+			},
+		});
+		// Higher resolution profile image
+		const avatar = user.profile_image_url.replace(/_\w+\.(\w+)$/, ".$1");
 		req.user = {
-			id: token.user_id,
 			type: "twitter",
+			id: user.id,
 			extra: {
-				name: token.screen_name,
+				name: user.name,
+				avatar,
 			},
 		};
 	},
 ];
 
-redirect.savesSession = true;
 export const name = "Twitter";

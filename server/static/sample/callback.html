@@ -5,26 +5,17 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Logged In - Thau Sample App</title>
-		<style>
-			html {
-				font-family: system-ui;
-			}
-			code {
-				font-weight: bold;
-				border: 2px solid #ccc;
-			}
-		</style>
+		<link rel="stylesheet" href="./styles.css" />
 	</head>
 	<body>
 		<h1>Thau - Sample App</h1>
 		<p>You're logged in!</p>
-		<h3>Your user id is <code id="uid"></code></h3>
-
+		<b>Your user id is <code id="uid"></code></b>
 		<p>
 			This data came from the token <code id="token"></code><br />
 			And the signature <code id="signature"></code>
 		</p>
-		<script type="module" src="/sample/callback.js"></script>
+		<script type="module" src="./callback.js"></script>
 		<a href="/sample">Go back to login</a>
 	</body>
 </html>

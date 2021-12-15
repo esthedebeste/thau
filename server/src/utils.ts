@@ -11,7 +11,8 @@ export type Req = Request & {
 				state: string;
 			};
 			twitter?: {
-				oauthToken: string;
+				codeVerifier: string;
+				state: string;
 			};
 			google?: {
 				state: string;

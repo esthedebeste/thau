@@ -73,7 +73,7 @@ const coggers = new Coggers(
 					maxAge: 604800,
 					sameSite: "Lax",
 					httpOnly: true,
-					path: "/",
+					path: "/auth/",
 					secure: prod,
 				},
 			}),
@@ -89,7 +89,7 @@ const coggers = new Coggers(
 					"X-Content-Type-Options": "nosniff",
 					"X-Frame-Options": "DENY",
 					"Content-Security-Policy":
-						"default-src 'none'; style-src 'self'; script-src 'self'; img-src 'self' https://images.unsplash.com;",
+						"default-src 'none'; style-src 'self'; script-src 'self'; img-src 'self' https://images.unsplash.com; connect-src 'self';",
 					"X-XSS-Protection": "1; mode=block",
 				});
 				res.error = (msg: string, code = 400) => res.status(code).send(msg);

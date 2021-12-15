@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { request } from "undici";
+import { Dispatcher, request } from "undici";
 import { Handler } from "../utils.js";
 
 export type Redirect = Handler & {
@@ -21,9 +21,10 @@ export const generateNonce = (len: number) =>
 	randomBytes(len * 0.75).toString("base64url");
 
 export const getJSON = async <T = any>(
-	...params: Parameters<typeof request>
+	url: string | URL,
+	options?: Omit<Dispatcher.RequestOptions, "origin" | "path">
 ): Promise<T> => {
-	const result = await request(...params);
+	const result = await request(url, options);
 	let body = "";
 	for await (const chunk of result.body) body += chunk;
 	return JSON.parse(body);
