@@ -19,6 +19,7 @@ export const { callback, redirect } = await openid(
 		prompt: ["prompt", "consent"],
 		nameKey: "given_name",
 		pictureKey: "picture",
+		scope: "openid profile",
 	}
 );
 export const name = "Google";

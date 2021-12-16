@@ -12,18 +12,24 @@ type ThauToken = {
 	uid: string;
 	iat: number;
 	aud: string;
+	extra: {
+		name?: string;
+		avatar?: string;
+	};
 };
 const { publicKey: publicJWK, privateKey: privateJWK } = secrets("signing");
 const sessionSecret: string[] = secrets("session");
 
 const SHATYPE = "SHA-384";
-const privateKey = await subtle.importKey(
-	"jwk",
-	privateJWK,
-	{ name: "ECDSA", hash: SHATYPE, namedCurve: privateJWK.crv },
-	false,
-	["sign"]
-);
+/** Publicly exposed object that can be used for subtle.importKey, subtle.verify and subtle.sign. */
+const algorithm: EcKeyImportParams & EcdsaParams = {
+	name: "ECDSA",
+	hash: SHATYPE,
+	namedCurve: publicJWK.crv,
+};
+const privateKey = await subtle.importKey("jwk", privateJWK, algorithm, false, [
+	"sign",
+]);
 const sessionPass = sessionSecret.map(str => Buffer.from(str, "base64"));
 
 const prelogin: Handler = (req, res) => {
@@ -39,16 +45,10 @@ const postlogin: Handler = async (req, res) => {
 		uid,
 		iat: Date.now() / 1000,
 		aud: callback,
+		extra: req.user.extra,
 	};
 	const bufToken = Buffer.from(JSON.stringify(token));
-	const sign = await subtle.sign(
-		{
-			name: "ECDSA",
-			hash: { name: SHATYPE },
-		},
-		privateKey,
-		bufToken
-	);
+	const sign = await subtle.sign(algorithm, privateKey, bufToken);
 	const signature = Buffer.from(sign).toString("base64url");
 	const b64token = bufToken.toString("base64url");
 	const redirect = `${callback}?token=${b64token}&signature=${signature}`;
@@ -121,7 +121,13 @@ const coggers = new Coggers(
 		],
 		keys: {
 			$get(_, res) {
-				res.json({ key: publicJWK, shatype: SHATYPE });
+				// Cache keys for 1 day
+				res.set("Cache-Control", "max-age=86400, immutable, public");
+				res.json({
+					key: publicJWK,
+					shatype: SHATYPE,
+					algorithm,
+				});
 			},
 		},
 		auth: auth(preredirect, prelogin, postlogin),

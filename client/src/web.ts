@@ -20,8 +20,8 @@ export const Thau = createThau(crypto.subtle, {
 			inLen = b64.length,
 			outLen = (inLen * 3 + 1) >> 2,
 			bytes = new Uint8Array(outLen);
-		let uint24 = 0;
-		let outI = 0;
+		let uint24 = 0,
+			outI = 0;
 		for (let inI = 0; inI < inLen; inI++) {
 			const mod4 = inI & 3;
 			uint24 |= b64urlToUint6(b64.charCodeAt(inI)) << (6 * (3 - mod4));
@@ -33,6 +33,6 @@ export const Thau = createThau(crypto.subtle, {
 		}
 		return bytes;
 	},
-	getJSON: (url: URL) => fetch(url.href).then(res => res.json()),
+	getJSON: (url: string) => fetch(url).then(res => res.json()),
 	stringify: (arr: Uint8Array) => new TextDecoder().decode(arr),
 });

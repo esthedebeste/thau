@@ -22,6 +22,17 @@ export type ThauToken = {
 	uid: string;
 	iat: number;
 	aud: string;
+	/**
+	 * Extra may be extended in the future.
+	 * There could also be cases in which only a part of extra is filled.
+	 */
+	extra: {
+		/** The user's username */
+		name?: string;
+		/** URL to the user's profile picture */
+		avatar?: string;
+		[other: string]: any;
+	};
 };
 
 export type Thau = new (options: ThauOptions) => {
@@ -38,21 +49,21 @@ export const createThau = <S extends BufferSource>(
 	}: {
 		base64url(data: string): S;
 		stringify(data: S): string;
-		getJSON(url: URL): Promise<{ key: JsonWebKey; shatype: string }>;
+		getJSON(url: string): Promise<any>;
 	}
 ): Thau =>
 	class Thau {
-		url: URL;
+		url: string;
 		key: CryptoKey;
 		urls: string[];
 		expirySecs: number;
-		shatype: string;
+		algorithm: EcKeyImportParams & EcdsaParams;
 		constructor({
 			url = "https://thau.herokuapp.com/keys",
 			expirySecs = 120,
 			urls,
 		}: ThauOptions) {
-			this.url = new URL(url);
+			this.url = url;
 			this.expirySecs = expirySecs;
 			this.urls = urls;
 			if (urls.some(url => localhostRe.test(url)))
@@ -63,31 +74,34 @@ export const createThau = <S extends BufferSource>(
 
 		/** Refreshes signature keys. */
 		async refreshData(): Promise<void> {
-			const { key, shatype } = await getJSON(this.url);
-			this.key = await subtle.importKey(
-				"jwk",
+			const {
 				key,
-				{
+				shatype,
+				algorithm = {
 					name: "ECDSA",
 					hash: { name: shatype },
 					namedCurve: key.crv,
 				},
-				false,
-				["verify"]
-			);
-			this.shatype = shatype;
+			}: {
+				key: JsonWebKey;
+				shatype?: string;
+				algorithm?: EcKeyImportParams & EcdsaParams;
+			} = await getJSON(this.url);
+			this.key = await subtle.importKey("jwk", key, algorithm, false, [
+				"verify",
+			]);
+			this.algorithm = algorithm;
 		}
 
 		async verify(
 			tokenb64url: string,
 			signatureb64url: string
 		): Promise<ThauToken> {
-			if (this.key == null) await this.refreshData();
+			if (!(this.key && this.algorithm)) await this.refreshData();
 
 			const token = base64url(tokenb64url);
-
 			const ok = await subtle.verify(
-				{ name: "ECDSA", hash: this.shatype },
+				this.algorithm,
 				this.key,
 				base64url(signatureb64url),
 				token

@@ -1,5 +1,4 @@
-import { jwtVerify } from "jose";
-import { createPublicKey, JsonWebKey, KeyObject } from "node:crypto";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 import {
 	Callback,
 	generateNonce,
@@ -30,6 +29,7 @@ export const openid = async (
 		prompt,
 		nameKey,
 		pictureKey,
+		scope,
 	}: {
 		id: string;
 		secret: string;
@@ -38,20 +38,10 @@ export const openid = async (
 		pictureKey: string;
 		/** google's is `"prompt","consent"`, twitch's is `"force_verify","true"` */
 		prompt: [string, string];
+		scope: string;
 	}
 ) => {
-	let key: KeyObject;
-	const getKey = async () => {
-		if (key) return key;
-		else {
-			const keys = await getJSON<{ keys: JsonWebKey[] }>(jwks_uri);
-			key = createPublicKey({
-				key: keys.keys[0],
-				format: "jwk",
-			});
-			return key;
-		}
-	};
+	const keySet = createRemoteJWKSet(new URL(jwks_uri));
 	const tokenQuery = new URLSearchParams({
 		client_id: id,
 		client_secret: secret,
@@ -69,9 +59,8 @@ export const openid = async (
 				baseTokenURL + `&code=${code}&redirect_uri=${cb}`,
 				{ method: "POST" }
 			);
-			const key = await getKey();
 			try {
-				const jwt = await jwtVerify(tokens.id_token, key, {
+				const jwt = await jwtVerify(tokens.id_token, keySet, {
 					audience: id,
 					issuer,
 				});
@@ -101,7 +90,7 @@ export const openid = async (
 	const redirQuery = new URLSearchParams({
 		client_id: id,
 		response_type: "code",
-		scope: "openid",
+		scope,
 		claims: JSON.stringify(claims),
 		[prompt[0]]: prompt[1],
 	});

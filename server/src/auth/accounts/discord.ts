@@ -48,7 +48,7 @@ export const callback: Callback = [
 				id: user.id,
 				extra: {
 					name: user.username,
-					avatar: `https://cdn.discordapp.com/${user.id}/${user.avatar}`,
+					avatar: `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`,
 				},
 			};
 		} catch {

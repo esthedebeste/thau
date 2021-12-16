@@ -1,8 +1,8 @@
 # Thau
 
-An easy cookie-less way to implement authentication into your application.
+An easy, quick way to implement authentication into your application.
 
-### Motivation
+## Motivation
 
 "Login With..." is hard to implement.
 For each provider, you have to:
@@ -16,9 +16,9 @@ And that tends to get messy. Instead, you can use Thau to do all of that for you
 
 Thau doesn't need a developer account, it doesn't need any shared secrets, if you wanted to you could implement "Login With" without even having a backend. It's a completely open & free method of authentication, powered by cryptography.
 
-### Examples
+## Examples
 
-#### [Express](https://npmjs.com/express)
+### [Express](https://npmjs.com/express)
 
 ```ts
 import express from "express";
@@ -43,7 +43,7 @@ app.get(
 app.listen(8080, () => console.log("Listening on port 8080"));
 ```
 
-#### [Coggers](https://npmjs.com/coggers)
+### [Coggers](https://npmjs.com/coggers)
 
 ```ts
 import { Coggers } from "coggers";
@@ -71,4 +71,20 @@ const coggers = new Coggers({
 coggers.listen(8080).then(() => console.log("Listening on port 8080"));
 ```
 
-[See the thau repo for more information](https://github.com/tbhmens/thau)
+### Browser
+
+```ts
+import { Thau } from "thau";
+const thau = new Thau({ urls: ["http://localhost:8080/callback"] });
+// Decode search params (?token=...&signature=...)
+const query = new URLSearchParams(window.location.search);
+const tokenQ = query.get("token");
+const signatureQ = query.get("signature");
+try {
+	const token = await thau.verify(tokenQ, signatureQ);
+	console.log("Authentication finished.");
+	console.dir(token);
+} catch {
+	console.error("Authentication failed, invalid token/signature.");
+}
+```

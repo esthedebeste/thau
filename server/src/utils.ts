@@ -28,11 +28,10 @@ export type Req = Request & {
 			| "twitter"
 			| "google" /* TODO: | "steam" etc */;
 		id: string;
-		/* TODO: find out where to put the extra data (in the token or just in the query?) */
-		extra?: Partial<{
+		extra: {
 			name: string;
 			avatar: string;
-		}>;
+		};
 	};
 };
 

@@ -5,3 +5,9 @@ code {
 	font-weight: bold;
 	border: 2px solid #ccc;
 }
+table,
+th,
+td {
+	border: 1px solid black;
+	border-collapse: collapse;
+}

@@ -17,6 +17,7 @@ export const { callback, redirect } = await openid(
 		prompt: ["force_verify", "true"],
 		nameKey: "preferred_username",
 		pictureKey: "picture",
+		scope: "openid",
 	}
 );
 export const name = "Twitch";

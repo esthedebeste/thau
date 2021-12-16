@@ -19,8 +19,8 @@ export const Thau = createThau(
 		stringify(data: Buffer): string {
 			return data.toString("utf8");
 		},
-		async getJSON(url: URL) {
-			const res = await request(url);
+		async getJSON(url: string) {
+			const res = await request(new URL(url));
 			let body = "";
 			for await (const chunk of res) body += chunk;
 			return JSON.parse(body);
