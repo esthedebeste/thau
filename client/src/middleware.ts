@@ -57,14 +57,14 @@ const coggersHandler = (options: ThauOptions & MWOptions) => {
 	const { error: sendError } = { ...defaults, ...options };
 	const thau = new Thau(options);
 
-	return async (
+	return (
 		req: IncomingMessage & {
 			query: Record<string, any>;
 		} & Partial<ThauExtended>,
 		res: ServerResponse
-	) => {
+	): Promise<void> => {
 		return thau.verifyRequest(req).then(
-			token => (req.thau = token),
+			token => ((req.thau = token), undefined),
 			error =>
 				sendError(
 					Array.isArray(error)

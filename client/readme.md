@@ -16,6 +16,8 @@ And that tends to get messy. Instead, you can use Thau to do all of that for you
 
 Thau doesn't need a developer account, it doesn't need any shared secrets, if you wanted to you could implement "Login With" without even having a backend. It's a completely open & free method of authentication, powered by cryptography.
 
+Also, if you don't feel like adding a new package to your project, you can also use Thau through OpenID Connect (Implicit Flow), discovery document available [here](https://thau.herokuapp.com/openid/openid-configuration)
+
 ## Examples
 
 ### [Express](https://npmjs.com/express)
