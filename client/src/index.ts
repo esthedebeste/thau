@@ -1,6 +1,7 @@
+import type { Thau as ThauT } from "./thau.js";
+
 const isWeb = typeof window !== "undefined";
 export type {
-	MissingQuery,
 	MWOptions,
 	ThauError,
 	ThauExtended,
@@ -10,12 +11,13 @@ export type {
 	ExpiredToken,
 	InvalidSignature,
 	InvalidToken,
+	MissingQuery,
 	ThauOptions,
 	ThauToken,
 	WrongAudience,
 } from "./thau.js";
 
-export const Thau = (
+export const Thau: ThauT = (
 	isWeb ? await import("./web.js") : await import("./node.js")
 ).Thau;
 

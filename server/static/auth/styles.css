@@ -82,3 +82,12 @@ h1.log-in {
 	bottom: 5%;
 	right: 5%;
 }
+
+.em {
+	color: red;
+	font-weight: bold;
+}
+
+.scopenote {
+	margin: 0 2em 0 2em;
+}

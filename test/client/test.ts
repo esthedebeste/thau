@@ -1,41 +1,24 @@
-import { Coggers, serveStatic } from "coggers";
-import { coggers as coggersMW } from "thau/src";
-import "../../server/src/server.js";
-const thauPort = process.env.PORT || 8080;
-const port = +thauPort + 1;
-const thauURL = `http://localhost:${thauPort}/`;
+import { Coggers } from "coggers";
+import * as thau from "../../client/src/index.js";
 
-const redir = new URL(
-	`/auth?callback=http://localhost:${port}/callback`,
-	thauURL
-).href;
-const keyURL = new URL(`/keys`, thauURL).href;
+console.log("Using thau server at https://thau.herokuapp.com/keys");
+const port = process.env.PORT || 8080;
+
 const coggers = new Coggers({
-	...serveStatic(new URL("../../client/dist", import.meta.url)),
 	$get(_, res) {
-		res.redirect(redir);
+		res.redirect(
+			`https://thau.herokuapp.com/auth?callback=http://localhost:${port}/callback`
+		);
 	},
 	callback: {
 		$get: [
-			coggersMW({
+			thau.coggers({
 				urls: [`http://localhost:${port}/callback`],
-				url: keyURL,
 			}),
 			(req, res) => {
-				res.html(
-					`<style>html{font-family:system-ui;}code{font-weight:bold;border:2px solid #ccc;}</style>Data from server: <code>${JSON.stringify(
-						req.thau,
-						null,
-						2
-					)}</code> <br> Data from browser: <code data-keyurl="${keyURL}" id="scriptdata"></code><script type="module" src="/script.js"></script>`
-				);
+				res.json(req.thau);
 			},
 		],
-	},
-	"script.js": {
-		$get(_req, res) {
-			res.sendFile(new URL("./static/script.js", import.meta.url));
-		},
 	},
 });
 

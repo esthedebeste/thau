@@ -2,8 +2,12 @@ export type InvalidToken = ["invalid_token", (keyof ThauToken)[]];
 export type ExpiredToken = ["expired_token", number];
 export type WrongAudience = ["wrong_audience", string];
 export type InvalidSignature = ["invalid_signature", string];
+export type MissingQuery = [
+	"missing_query",
+	["token"] | ["signature"] | ["token", "signature"]
+];
 export type ThauOptions = {
-	/** Defaults to https://thau.herokuapp.com/keys */
+	/** Defaults to https://thau.herokuapp.com/key */
 	url?: string;
 	/** Defaults to 120 */
 	expirySecs?: number;
@@ -38,7 +42,15 @@ export type ThauToken = {
 export type Thau = new (options: ThauOptions) => {
 	refreshData(): Promise<void>;
 	verify(tokenb64url: string, signatureb64url: string): Promise<ThauToken>;
+	verifyRequest(
+		req: { url: string } | { query: Record<string, string> }
+	): Promise<ThauToken>;
+	verifyQuery(
+		query: string | URLSearchParams | Record<string, string>
+	): Promise<ThauToken>;
 };
+
+type JWK = JsonWebKey & { kid: string };
 
 export const createThau = <S extends BufferSource>(
 	subtle: SubtleCrypto,
@@ -54,12 +66,12 @@ export const createThau = <S extends BufferSource>(
 ): Thau =>
 	class Thau {
 		url: string;
-		key: CryptoKey;
+		keys: Record<string, CryptoKey>;
 		urls: string[];
 		expirySecs: number;
 		algorithm: EcKeyImportParams & EcdsaParams;
 		constructor({
-			url = "https://thau.herokuapp.com/keys",
+			url = "https://thau.herokuapp.com/key",
 			expirySecs = 120,
 			urls,
 		}: ThauOptions) {
@@ -76,6 +88,7 @@ export const createThau = <S extends BufferSource>(
 		async refreshData(): Promise<void> {
 			const {
 				key,
+				keys = [key],
 				shatype,
 				algorithm = {
 					name: "ECDSA",
@@ -83,26 +96,53 @@ export const createThau = <S extends BufferSource>(
 					namedCurve: key.crv,
 				},
 			}: {
-				key: JsonWebKey;
+				key?: JWK;
+				keys?: JWK[];
 				shatype?: string;
 				algorithm?: EcKeyImportParams & EcdsaParams;
 			} = await getJSON(this.url);
-			this.key = await subtle.importKey("jwk", key, algorithm, false, [
-				"verify",
-			]);
+			this.keys = {};
+			for (const key of keys)
+				this.keys[key.kid || "1"] = await subtle.importKey(
+					"jwk",
+					key,
+					algorithm,
+					false,
+					["verify"]
+				);
 			this.algorithm = algorithm;
 		}
 
+		async verifyRequest(
+			req: { url: string } | { query: Record<string, string> }
+		): Promise<ThauToken> {
+			return this.verifyQuery(
+				"query" in req
+					? req.query
+					: new URLSearchParams(req.url.slice(req.url.indexOf("?")))
+			);
+		}
+		async verifyQuery(
+			query: string | URLSearchParams | Record<string, string>
+		): Promise<ThauToken> {
+			if (typeof query === "string") query = new URLSearchParams(query);
+			if (query instanceof URLSearchParams) query = Object.fromEntries(query);
+			const missingQ = ["token", "signature"].filter(key => !query[key]);
+			if (missingQ.length > 0)
+				throw <MissingQuery>["missing_query", missingQ as any];
+			return this.verify(query.token, query.signature, query.keyid);
+		}
 		async verify(
 			tokenb64url: string,
-			signatureb64url: string
+			signatureb64url: string,
+			keyid?: string
 		): Promise<ThauToken> {
-			if (!(this.key && this.algorithm)) await this.refreshData();
+			if (!(this.keys && this.algorithm)) await this.refreshData();
 
 			const token = base64url(tokenb64url);
 			const ok = await subtle.verify(
 				this.algorithm,
-				this.key,
+				this.keys[keyid || "1"],
 				base64url(signatureb64url),
 				token
 			);

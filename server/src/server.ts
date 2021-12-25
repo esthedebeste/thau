@@ -4,9 +4,22 @@ import { webcrypto } from "node:crypto";
 import { STATUS_CODES } from "node:http";
 import { renderFile } from "poggies";
 import { auth } from "./auth/blueprint.js";
+import { requireQuery } from "./auth/shared.js";
 import { getsert } from "./database.js";
+import { openid } from "./openid.js";
 import { sample } from "./sample.js";
-import { Handler, prod, secrets } from "./utils.js";
+import {
+	algorithm,
+	extraScopes,
+	Handler,
+	keys,
+	prod,
+	pubkeys,
+	Req,
+	Res,
+	secrets,
+	SHATYPE,
+} from "./utils.js";
 const { subtle } = webcrypto as unknown as typeof window.crypto;
 type ThauToken = {
 	uid: string;
@@ -17,19 +30,8 @@ type ThauToken = {
 		avatar?: string;
 	};
 };
-const { publicKey: publicJWK, privateKey: privateJWK } = secrets("signing");
 const sessionSecret: string[] = secrets("session");
 
-const SHATYPE = "SHA-384";
-/** Publicly exposed object that can be used for subtle.importKey, subtle.verify and subtle.sign. */
-const algorithm: EcKeyImportParams & EcdsaParams = {
-	name: "ECDSA",
-	hash: SHATYPE,
-	namedCurve: publicJWK.crv,
-};
-const privateKey = await subtle.importKey("jwk", privateJWK, algorithm, false, [
-	"sign",
-]);
 const sessionPass = sessionSecret.map(str => Buffer.from(str, "base64"));
 
 const prelogin: Handler = (req, res) => {
@@ -37,32 +39,41 @@ const prelogin: Handler = (req, res) => {
 };
 const postlogin: Handler = async (req, res) => {
 	const user = req.user;
-	const { callback } = req.session;
+	const { callback, scopes } = req.session;
 	if (!callback) return res.status(400).send("No callback");
 
 	const uid = await getsert(user.type, user.id);
+	const extra = {};
+	for (const scope of scopes)
+		if (scope in user.extra) extra[scope] = user.extra[scope];
 	const token: ThauToken = {
 		uid,
 		iat: Date.now() / 1000,
 		aud: callback,
-		extra: req.user.extra,
+		extra,
 	};
 	const bufToken = Buffer.from(JSON.stringify(token));
-	const sign = await subtle.sign(algorithm, privateKey, bufToken);
+	// old endpoint only has a single key
+	const key = keys[0];
+	const sign = await subtle.sign(algorithm, key.private, bufToken);
 	const signature = Buffer.from(sign).toString("base64url");
 	const b64token = bufToken.toString("base64url");
-	const redirect = `${callback}?token=${b64token}&signature=${signature}`;
+	const redirect = `${callback}?token=${b64token}&signature=${signature}&keyid=${key.kid}`;
 	res.deleteSession();
 	res.redirect(redirect);
 };
-const preredirect =
-	(saveSession = true): Handler =>
-	(req, res) => {
-		const { callback } = req.query;
-		if (!callback) res.error("No Callback", 400);
-		req.session = { callback };
-		if (saveSession) res.saveSession();
-	};
+const preredirect = (saveSession = true): Handler[] =>
+	[
+		requireQuery(["callback"]),
+		(req: Req) =>
+			(req.session = {
+				callback: req.query.callback,
+				scopes: req.query.scopes
+					?.split(" ")
+					.filter(scope => extraScopes.has(scope)) || [...extraScopes],
+			}),
+		saveSession ? (_req: Req, res: Res) => res.saveSession() : [],
+	].flat();
 const coggers = new Coggers(
 	{
 		$: [
@@ -119,18 +130,29 @@ const coggers = new Coggers(
 				  },
 			renderEngine(renderFile, new URL("../views", import.meta.url), "pog"),
 		],
-		keys: {
+		info: {
 			$get(_, res) {
 				// Cache keys for 1 day
 				res.set("Cache-Control", "max-age=86400, immutable, public");
 				res.json({
-					key: publicJWK,
+					key: pubkeys[0],
 					shatype: SHATYPE,
 					algorithm,
 				});
 			},
 		},
+		keys: { $get: (_, res) => res.redirect("/info", 301) },
+		/** Future endpoint, can have multiple keys */
+		key: {
+			$get(_, res) {
+				res.json({
+					keys: pubkeys,
+					algorithm,
+				});
+			},
+		},
 		auth: auth(preredirect, prelogin, postlogin),
+		openid,
 		sample,
 		$get(_req, res) {
 			res.redirect("/sample");

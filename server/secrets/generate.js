@@ -8,6 +8,7 @@ node generate.js [--keys | -k] [--session | -s]
 const argv = process.argv.slice(2);
 if (argv.length === 0) {
 	console.log(help);
+	// eslint-disable-next-line unicorn/no-process-exit
 	process.exit(0);
 }
 
@@ -18,16 +19,26 @@ if (gave("--keys") || gave("-k")) {
 	const { publicKey, privateKey } = generateKeyPairSync("ec", {
 		namedCurve: "P-384",
 	});
+	const pubJWK = publicKey.export({
+		format: "jwk",
+	});
+	pubJWK.kid = "1";
+	pubJWK.alg = "ES384";
+	pubJWK.key_ops = ["verify"];
+	const privJWK = privateKey.export({
+		format: "jwk",
+	});
+	privJWK.kid = "1";
+	privJWK.alg = "ES384";
+	privJWK.key_ops = ["sign"];
 	writeFileSync(
 		file,
-		JSON.stringify({
-			publicKey: publicKey.export({
-				format: "jwk",
-			}),
-			privateKey: privateKey.export({
-				format: "jwk",
-			}),
-		})
+		JSON.stringify([
+			{
+				public: pubJWK,
+				private: privJWK,
+			},
+		])
 	);
 	console.log("Generated signing keys");
 }

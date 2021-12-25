@@ -10,10 +10,13 @@ html(lang=en-US){
     body{
         div.container{
             h1.log-in[Sign In With]
+        }<if(scopes.length>0){
+            p.scopenote{ span.em[Note: ] }[the application at ][>callback.origin][/ has requested access to your ][>scopes][.]
+        }>{
             ul.accounts<
                 for([fancy, lowercase] of accounts){
                     li(class=>"`account ${lowercase}`"){
-                        a(href=>`${lowercase}?callback=${callback}`){
+                        a(href=>lowercase+query){
                             img.icon(
                                 alt=>fancy srcset=>"`assets/${lowercase}.svg 300w, assets/${lowercase}-small.svg 60w`"
                                 sizes="(max-width: 1200px) 60px, 300px"

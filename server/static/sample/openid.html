@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<base href="/sample/" />
+		<title>Thau - Sample App</title>
+		<link rel="stylesheet" href="./styles.css" />
+	</head>
+	<body>
+		<h1>Thau - Sample App</h1>
+		<p>
+			Thau supports the OpenID implicit JWT flow, which might be easier to
+			configure. If you want to use the OpenID implicit JWT flow, you can use
+			the discovery document available at
+			<a href="/openid/openid-configuration">
+				<code>/openid/openid-configuration</code>
+			</a>
+		</p>
+		<a
+			href="/auth?client_id=/sample/callback&response_type=id_token&redirect_uri=/sample/callback&scope=openid&state=12345&nonce=678910"
+		>
+			Log In With Thau (Scopes: openid)
+		</a>
+		<br />
+		<a
+			href="/auth?client_id=/sample/callback&response_type=id_token&redirect_uri=/sample/callback&scope=openid name&state=12345&nonce=678910"
+		>
+			Log In With Thau (Scopes: openid name)
+		</a>
+		<br />
+		<a
+			href="/auth?client_id=/sample/callback&response_type=id_token&redirect_uri=/sample/callback&scope=openid name avatar&state=12345&nonce=678910"
+		>
+			Log In With Thau (Scopes: openid name avatar)
+		</a>
+		<br />
+		<br />
+		<br />
+		<a href="/sample/custom">custom front-end example</a><br />
+		<a href="/sample/openid">openid example</a>
+	</body>
+</html>

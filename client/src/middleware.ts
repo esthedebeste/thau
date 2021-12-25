@@ -5,13 +5,10 @@ import {
 	ExpiredToken,
 	InvalidSignature,
 	InvalidToken,
+	MissingQuery,
 	WrongAudience,
 } from "./thau.js";
 
-export type MissingQuery = [
-	"missing_query",
-	["token"] | ["signature"] | ["token", "signature"]
-];
 export type UnknownError = ["unknown_error", Error];
 export type ThauError =
 	| MissingQuery
@@ -55,11 +52,9 @@ export type ThauExtended = {
 	thau?: ThauToken;
 };
 
-const neededQ = ["token", "signature"];
-
 /** After this middleware, you can get the thau uid (as a string) from req.thau.uid */
 const coggersHandler = (options: ThauOptions & MWOptions) => {
-	const { error } = { ...defaults, ...options };
+	const { error: sendError } = { ...defaults, ...options };
 	const thau = new Thau(options);
 
 	return async (
@@ -68,18 +63,17 @@ const coggersHandler = (options: ThauOptions & MWOptions) => {
 		} & Partial<ThauExtended>,
 		res: ServerResponse
 	) => {
-		const missingQ = neededQ.filter(key => typeof req.query[key] !== "string");
-		if (missingQ.length > 0)
-			return await error(["missing_query", missingQ as any], req, res);
-
-		const { token, signature } = req.query as Record<string, string>;
-		try {
-			req.thau = await thau.verify(token, signature);
-		} catch (error_) {
-			return Array.isArray(error_)
-				? error(error_ as ThauError, req, res)
-				: error(["unknown_error", error_], req, res);
-		}
+		return thau.verifyRequest(req).then(
+			token => (req.thau = token),
+			error =>
+				sendError(
+					Array.isArray(error)
+						? (error as ThauError)
+						: ["unknown_error", error],
+					req,
+					res
+				)
+		);
 	};
 };
 
