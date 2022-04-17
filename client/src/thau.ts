@@ -2,6 +2,7 @@ export type InvalidToken = ["invalid_token", (keyof ThauToken)[]];
 export type ExpiredToken = ["expired_token", number];
 export type WrongAudience = ["wrong_audience", string];
 export type InvalidSignature = ["invalid_signature", string];
+export type InvalidKeyId = ["invalid_key_id", string];
 export type MissingQuery = [
 	"missing_query",
 	["token"] | ["signature"] | ["token", "signature"]
@@ -140,6 +141,8 @@ export const createThau = <S extends BufferSource>(
 			if (!(this.keys && this.algorithm)) await this.refreshData();
 
 			const token = base64url(tokenb64url);
+			if (!Object.prototype.hasOwnProperty.call(this.keys, keyid))
+				throw <InvalidKeyId>["invalid_key_id", keyid];
 			const ok = await subtle.verify(
 				this.algorithm,
 				this.keys[keyid || "1"],

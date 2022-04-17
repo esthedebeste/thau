@@ -3,6 +3,7 @@ import type { ThauOptions, ThauToken } from "./index.js";
 import { Thau } from "./node.js";
 import {
 	ExpiredToken,
+	InvalidKeyId,
 	InvalidSignature,
 	InvalidToken,
 	MissingQuery,
@@ -16,6 +17,7 @@ export type ThauError =
 	| ExpiredToken
 	| WrongAudience
 	| InvalidSignature
+	| InvalidKeyId
 	| UnknownError;
 
 type baseH = (
@@ -38,6 +40,8 @@ const messages = {
 		`[thau] Invalid Signature (got ${signature})`,
 	wrong_audience: ([, audience]: WrongAudience) =>
 		`[thau] Invalid Token (Wrong Audience: ${audience})`,
+	invalid_key_id: ([, keyId]: InvalidKeyId) =>
+		`[thau] Invalid Token (Invalid Key ID: ${keyId})`,
 	unknown_error: ([, error]: UnknownError) => {
 		console.error(error);
 		return "[thau] Unknown Error.";
@@ -45,7 +49,9 @@ const messages = {
 };
 
 const defaults: MWOptions = {
-	error: (err, _, res) => res.writeHead(400).end(messages[err[0]](err as any)),
+	error: (err, _, res) => {
+		res.writeHead(400).end(messages[err[0]](err as any));
+	},
 };
 
 export type ThauExtended = {
